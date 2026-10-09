@@ -1237,7 +1237,7 @@ fn folder_menu_for_library(app: &mut LightkubApp, resp: &egui::Response, n: &Fol
             ui.close();
         }
         if app.services.reveal.is_some()
-            && ui.button(crate::i18n::tr("Show in Finder")).clicked()
+            && ui.button(crate::i18n::tr(crate::menus::reveal_label())).clicked()
             && let Some(f) = app.services.reveal.as_mut()
         {
             let _ = f(path);

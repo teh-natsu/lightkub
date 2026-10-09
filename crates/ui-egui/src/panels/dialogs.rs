@@ -747,7 +747,7 @@ pub fn show(app: &mut LightkubApp, ctx: &egui::Context) {
                     ui.label(egui::RichText::new("LightKub").font(t.semibold(20.0)).color(t.text));
                     ui.label(crate::i18n::tr_format!("Version {}", env!("CARGO_PKG_VERSION")));
                     ui.add_space(6.0);
-                    ui.label(egui::RichText::new(format!("UI: egui · Fonts: {} (OFL) · Icons: original", crate::theme::font_credits())).color(t.text_dim).small());
+                    ui.label(egui::RichText::new(format!("UI: egui · Fonts: {} (OFL) · Icons: original", crate::theme::font_credits(app.chinese_font.is_some()))).color(t.text_dim).small());
                     ui.add_space(12.0);
                     ui.label(egui::RichText::new(crate::i18n::tr("Based on LightCraft by the ArtCraft team.")).color(t.text_dim));
                 }
