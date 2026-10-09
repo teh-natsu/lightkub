@@ -1,6 +1,6 @@
 """Build the LightKub app icon SVGs: the master (lightkub.svg) and the small-size variant (lightkub-small.svg).
 
-A red panda peeks over the top of a photo print and holds it with both paws, on a deep-teal tile.
+A red panda peeks over the top of a photo print and holds it with both paws, on a violet tile.
 The photo is a landscape: sky, sun and two hills. Everything is plain SVG shapes, so no font or
 external artwork is needed.
 
@@ -10,7 +10,7 @@ import sys
 
 OUT_DIR = sys.argv[1]
 
-TEAL_TOP, TEAL_BOTTOM = "#1f6670", "#0b2a31"
+TEAL_TOP, TEAL_BOTTOM = "#9b4fd8", "#4b1a78"
 FUR_TOP, FUR_BOTTOM = "#e8692d", "#bb4015"
 FUR_DARK = "#6b2410"  # tear marks, inner ears
 PAW = "#3a1a10"

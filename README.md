@@ -11,8 +11,8 @@
 </p>
 
 <p align="center">
-  <img alt="License: MIT OR Apache-2.0" src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-1f6670">
-  <img alt="Written in Rust" src="https://img.shields.io/badge/written%20in-Rust-0b2a31">
+  <img alt="License: MIT OR Apache-2.0" src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-9b4fd8">
+  <img alt="Written in Rust" src="https://img.shields.io/badge/written%20in-Rust-4b1a78">
   <img alt="No account, no telemetry" src="https://img.shields.io/badge/no%20account-no%20telemetry-e8692d">
 </p>
 
