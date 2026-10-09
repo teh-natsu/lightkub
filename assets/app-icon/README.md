@@ -1,28 +1,31 @@
 # LightKub app icon
 
-<img src="lightkub.svg" alt="LightKub app icon: a red panda peeking over a landscape photo and holding it with both paws, on violet" width="128">
+<img src="lightkub.svg" alt="LightKub app icon: a flat red panda resting its paws on a white card with a photo (sun and mountains), on violet glass" width="128">
 
-**Creature:** a red panda (แพนด้าแดง), head and paws, peeking over the top edge of a photo print and
-holding it. Cream brows, cheeks and muzzle, dark tear marks under the eyes, cream-rimmed ears. The same
-red panda as [PdfKub](https://github.com/teh-natsu/pdfkub)'s icon, holding a photo instead of a page.
+**Creature:** a flat red panda (แพนด้าแดง), head and paws, resting its paws on a white card that shows
+a photo (sun and mountains). Cream inner ears, brows, cheeks and muzzle, dark tear marks under the eyes. The same panda in all three
+*Kub apps ([PdfKub](https://github.com/teh-natsu/pdfkub), [LightKub](https://github.com/teh-natsu/lightkub),
+[CadKub](https://github.com/teh-natsu/cadkub)); each has its own tile colour and symbol.
 
 **Palette:**
 
 | Colour | Hex | Used for |
 |---|---|---|
-| Violet (app colour) | `#9b4fd8` → `#4b1a78` | the full-bleed field, top to bottom |
-| Fur | `#e8692d` → `#bb4015` | head and ears, top to bottom |
-| Dark fur | `#6b2410`, `#3a1a10` | tear marks and inner ears; paws |
-| Cream | `#fff6ea` | brows, cheeks, muzzle, ear rims |
-| Ink | `#1a0f0b` | eyes, nose, mouth |
-| Photo | `#ffffff` border; sky `#7cc6ef` → `#d6efff`, sun `#ffc93c`, hills `#3f9a7c`, `#226a52` | the print and its landscape |
+| Violet (app colour) | `#b673ff` → `#6526c2` | the tile, top-left to bottom-right; the symbol on the card |
+| Glass lights | `#ff86d8`, `#5b8cff` | two blurred lights behind the frosted pane (top-left, bottom-right) |
+| Glass | white at 7 %, a white sheen and a white rim | the frosted pane, its diagonal sheen and its lit edge |
+| Fur | `#f2732f`; paws `#d85a1e` | head and ears; paws |
+| Cream | `#fff5e8` | inner ears, brows, cheeks, muzzle |
+| Tear marks | `#a3391a` | under the eyes |
+| Ink | `#22140f` | eyes, nose, mouth |
+| Card | `#ffffff`; sun `#ffc53d` | a photo: frame, sun and two mountains in the app colour |
 
-**Tile:** `viewBox="0 0 512 512"`, a rounded square with `rx=112` that clips everything. Windows and Linux
-icons use the full-bleed tile. macOS files (`.icns`, `lightkub-macos-512.png`) put it on Apple's grid (an
+**Tile:** `viewBox="0 0 512 512"`, a rounded square with `rx=114` that clips everything; the card casts a
+soft shadow. Windows and Linux icons use the full-bleed tile. macOS icons put it on Apple's grid (an
 824/1024 body with a transparent margin).
 
-**Small sizes:** `lightkub-small.svg` (used at 24 px and below) drops the eye highlights, blush, mouth,
-claws and the far hill, and draws bigger eyes and a bigger sun instead.
+**Small sizes:** `lightkub-small.svg` (used at 24 px and below) drops the glass lights, the shadow, the eye
+highlights and the mouth, and draws bigger eyes, a thicker rim, frame and sun.
 
 **Provenance:** drawn as plain SVG shapes by [`packaging/make_icon.py`](../../packaging/make_icon.py); no
 fonts or third-party artwork. Licence: [LICENSE.txt](LICENSE.txt) (`MIT OR Apache-2.0`, like the repo).
