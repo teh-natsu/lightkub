@@ -145,9 +145,9 @@ thread_local! {
     static LOCALE: std::cell::Cell<Locale> = const { std::cell::Cell::new(Locale::En) };
 }
 
-/// The UI language from the environment (`LIGHTCRAFT_LANGUAGE=zh-hans`), for headless runs.
+/// The UI language from the environment (`LIGHTKUB_LANGUAGE=zh-hans`), for headless runs.
 pub fn default_language() -> Locale {
-    std::env::var("LIGHTCRAFT_LANGUAGE").ok().and_then(|value| Locale::parse_tag(&value)).unwrap_or(Locale::En)
+    std::env::var("LIGHTKUB_LANGUAGE").ok().and_then(|value| Locale::parse_tag(&value)).unwrap_or(Locale::En)
 }
 
 pub fn set_language(language: Locale) {
@@ -194,10 +194,10 @@ include!(concat!(env!("OUT_DIR"), "/tr-formats.rs"));
 /// (issue #260), in the UI language: the error and, when there is one, the log file to look in.
 pub fn startup_failed_message(error: &str, log_file: Option<&str>) -> (String, String) {
     let text = match log_file {
-        Some(path) => tr_format!("LightCraft could not open its window: {e}\n\nThe log file has the details: {path}", e = error, path = path),
-        None => tr_format!("LightCraft could not open its window: {e}", e = error),
+        Some(path) => tr_format!("LightKub could not open its window: {e}\n\nThe log file has the details: {path}", e = error, path = path),
+        None => tr_format!("LightKub could not open its window: {e}", e = error),
     };
-    (tr("LightCraft could not start").to_string(), text)
+    (tr("LightKub could not start").to_string(), text)
 }
 
 pub fn builtin_label(source: &str, builtin: bool) -> &str {
@@ -419,9 +419,9 @@ mod tests {
     /// file, in the UI language.
     #[test]
     fn startup_failure_message_names_the_error_and_the_log() {
-        let (title, text) = startup_failed_message("no adapter", Some("/home/a/.config/lightcraft/logs/lightcraft.log"));
-        assert_eq!(title, "LightCraft could not start");
-        assert!(text.contains("no adapter") && text.ends_with("lightcraft.log"), "{text}");
+        let (title, text) = startup_failed_message("no adapter", Some("/home/a/.config/lightkub/logs/lightkub.log"));
+        assert_eq!(title, "LightKub could not start");
+        assert!(text.contains("no adapter") && text.ends_with("lightkub.log"), "{text}");
         assert!(!startup_failed_message("no adapter", None).1.contains("log file"));
     }
 
@@ -544,6 +544,32 @@ mod tests {
                         language.code(),
                         missing.iter().collect::<String>()
                     );
+                }
+            });
+        }
+    }
+
+    /// Thai text (folder and file names, keywords, captions) paints with Anuphan, which follows Inter
+    /// in every family, with or without craft-fonts.
+    #[test]
+    fn thai_text_is_paintable() {
+        const THAI: &str = "ภาพถ่ายทริปเชียงใหม่ที่ไม่ใช่กล่อง";
+        for craft in [lightcraft_engine::CRAFT_FONTS, &[]] {
+            let defs = crate::theme::font_definitions(craft);
+            for family in [egui::FontFamily::Proportional, egui::FontFamily::Name(crate::theme::FONT_SEMIBOLD.into())] {
+                assert_eq!(defs.families[&family].get(1).map(String::as_str).map(|f| f.starts_with("Anuphan")), Some(true), "{family:?}");
+            }
+            let ctx = egui::Context::default();
+            ctx.set_fonts(defs);
+            let mut out = ctx.run_ui(egui::RawInput::default(), |_| {});
+            out.textures_delta.clear();
+            ctx.fonts_mut(|fonts| {
+                for family in
+                    [egui::FontFamily::Proportional, egui::FontFamily::Monospace, egui::FontFamily::Name(crate::theme::FONT_SEMIBOLD.into())]
+                {
+                    let font = egui::FontId::new(13.0, family.clone());
+                    let missing: String = THAI.chars().filter(|ch| !fonts.has_glyph(&font, *ch)).collect();
+                    assert!(missing.is_empty(), "{family:?} lacks {missing}");
                 }
             });
         }
@@ -674,7 +700,7 @@ mod tests {
     #[test]
     fn german_switches_via_menu_and_control_persists_and_formats_dates() {
         use crate::control::{ControlRequest, Outcome};
-        let mut app = crate::LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default());
+        let mut app = crate::LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default());
         app.run("app.language.german", serde_json::json!({})).unwrap();
         assert_eq!(app.ui.language, Locale::De);
         assert_eq!(tr("File"), "Datei");
@@ -717,14 +743,14 @@ mod tests {
     #[test]
     fn german_panels_dialogs_and_glyphs_are_painted_without_extra_fonts() {
         let ctx = fonts_ctx(&[]);
-        let mut app = crate::LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default());
+        let mut app = crate::LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default());
         app.ui.left_panel = true;
         let text = painted_text(&ctx, &mut app, Locale::De);
         assert!(text.contains("Meine Fotos") && text.contains("Alle Fotos"), "{text}");
         app.ui.view = crate::state::ViewMode::People;
         let text = painted_text(&ctx, &mut app, Locale::De);
         assert!(text.contains("Benannte Personen"), "{text}");
-        for (command, title) in [("app.about", "Über LightCraft"), ("app.shortcuts", "Tastenkürzel"), ("app.settings", "Einstellungen")] {
+        for (command, title) in [("app.about", "Über LightKub"), ("app.shortcuts", "Tastenkürzel"), ("app.settings", "Einstellungen")] {
             app.ui.dialog = None;
             app.run(command, serde_json::json!({})).unwrap();
             let text = painted_text(&ctx, &mut app, Locale::De);
@@ -754,7 +780,7 @@ mod tests {
         }
         let ctx = fonts_ctx(&[]);
         let services = crate::Services { pick_folder: Some(Box::new(|| None)), ..Default::default() };
-        let mut app = crate::LightcraftApp::new(lightcraft_engine::Session::with_demo(), services);
+        let mut app = crate::LightkubApp::new(lightcraft_engine::Session::with_demo(), services);
         app.ui.language = Locale::De;
         let mut bounds = Vec::new();
         for export in [false, true] {
@@ -806,7 +832,7 @@ mod tests {
     }
 
     /// The text the whole window paints over a few frames in `language`.
-    fn painted_text(ctx: &egui::Context, app: &mut crate::LightcraftApp, language: Locale) -> String {
+    fn painted_text(ctx: &egui::Context, app: &mut crate::LightkubApp, language: Locale) -> String {
         fn collect(shape: &egui::epaint::Shape, text: &mut String) {
             match shape {
                 egui::epaint::Shape::Text(shape) => {
@@ -841,9 +867,9 @@ mod tests {
     fn every_language_is_painted_and_menu_ids_stay_the_same() {
         let ctx = egui::Context::default();
         crate::theme::install_fonts(&ctx);
-        let mut app = crate::LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default());
+        let mut app = crate::LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default());
         app.ui.left_panel = true;
-        let ids = |app: &crate::LightcraftApp| crate::menus::menu_entries(app).into_iter().map(|entry| entry.id).collect::<Vec<_>>();
+        let ids = |app: &crate::LightkubApp| crate::menus::menu_entries(app).into_iter().map(|entry| entry.id).collect::<Vec<_>>();
         let english_ids = ids(&app);
         for language in Locale::ALL {
             let text = painted_text(&ctx, &mut app, *language);
@@ -910,10 +936,10 @@ mod tests {
             // replacement-glyph face, which there is Hack, the face that draws Latin.)
             for family in [egui::FontFamily::Proportional, egui::FontFamily::Name(crate::theme::FONT_SEMIBOLD.into())] {
                 let font = egui::FontId::new(13.0, family);
-                assert!("LightCraft".chars().all(|ch| fonts.has_glyph(&font, ch)), "{font:?}");
+                assert!("LightKub".chars().all(|ch| fonts.has_glyph(&font, ch)), "{font:?}");
             }
         });
-        let mut app = crate::LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default());
+        let mut app = crate::LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default());
         for language in Locale::ALL {
             app.ui.language = *language;
             for frame in 0..3 {
@@ -933,7 +959,7 @@ mod tests {
     #[test]
     fn traditional_chinese_switches_through_menu_and_control_and_persists() {
         use crate::control::{ControlRequest, Outcome};
-        let mut app = crate::LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default());
+        let mut app = crate::LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default());
         app.run("app.language.traditionalChinese", serde_json::json!({})).unwrap();
         assert_eq!(app.ui.language, Locale::ZhHant);
         // Applied at once, not on the next frame.
@@ -972,7 +998,7 @@ mod tests {
         let Outcome::Done(reply) = crate::control::handle(&mut app, &ctx, &req) else { panic!("expected a reply") };
         assert_eq!(reply["ok"], false);
         assert_eq!(app.ui.language, Locale::ZhHant);
-        let ids = |app: &crate::LightcraftApp| crate::menus::menu_entries(app).into_iter().map(|entry| entry.id).collect::<Vec<_>>();
+        let ids = |app: &crate::LightkubApp| crate::menus::menu_entries(app).into_iter().map(|entry| entry.id).collect::<Vec<_>>();
         let chinese_ids = ids(&app);
         app.run("app.language.english", serde_json::json!({})).unwrap();
         assert_eq!(tr("File"), "File");
@@ -1009,7 +1035,7 @@ mod tests {
     fn traditional_chinese_presets_and_panel_headers_are_painted() {
         let ctx = egui::Context::default();
         crate::theme::install_fonts(&ctx);
-        let mut app = crate::LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default());
+        let mut app = crate::LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default());
         app.ui.presets = true;
         let builtin = app.session.presets.iter().find(|p| p.name == "Warm Glow").unwrap().clone();
         app.session.presets.push(lightcraft_develop::Preset { id: "user.test".into(), builtin: false, ..builtin });

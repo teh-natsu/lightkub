@@ -1,11 +1,13 @@
-LightCraft
-Copyright (c) 2026 ArtCraft Team and the LightCraft contributors.
-Licensed under the MIT License or the Apache License, Version 2.0, at your option
-(LICENSE-MIT, LICENSE-APACHE).
+LightKub
+Copyright (c) 2026 Nattpol Chaisri and the LightKub contributors.
 
-The ArtCraft name, wordmark and logos in docs/brand/ are trademarks of the ArtCraft Team. They are
-not open source and are not covered by the license above; their terms are in
-docs/brand/LICENSE-brand.txt.
+LightKub is based on LightCraft (https://github.com/storytold/lightcraft),
+Copyright (c) 2026 ArtCraft Team and the LightCraft contributors.
+
+Both are licensed under the MIT License or the Apache License, Version 2.0, at your option
+(LICENSE-MIT, LICENSE-APACHE), except crates/segment (Apache-2.0 only, below). LightKub is not
+made, sponsored or endorsed by the ArtCraft Team, and it contains none of the ArtCraft name,
+wordmark or logos.
 
 Third-party material
 
@@ -13,6 +15,8 @@ This product bundles third-party material under its own licenses, listed below. 
 list (author, source, license) is in assets/ATTRIBUTION.md.
 
 Inter (assets/fonts/Inter-*.ttf) — SIL Open Font License 1.1. See assets/fonts/OFL-Inter.txt.
+Anuphan (assets/fonts/Anuphan-*.ttf), Copyright 2019 The Anuphan Project Authors, static instances of
+the variable font — SIL Open Font License 1.1. See assets/fonts/OFL-Anuphan.txt.
 Showcase photographs by Ansel Adams, Dorothea Lange and NASA (docs/images/) — public domain. See assets/ATTRIBUTION.md.
 
 crates/segment (lightcraft-segment) ports the SAM 3 model code of Hugging Face Transformers
@@ -22,12 +26,12 @@ The port was modified by the LightCraft contributors (2026): translated from Pyt
 Rust on candle and restructured; each ported file says so. Because of this, crates/segment is
 licensed under the Apache License 2.0 only (LICENSE-APACHE), not under the MIT option.
 
-The SAM 3 weights are not part of LightCraft and are never distributed with it. A user downloads
+The SAM 3 weights are not part of LightKub and are never distributed with it. A user downloads
 the facebook/sam3 checkpoint only when they choose to (in the app, or by hand), under Meta's SAM
 License (https://github.com/facebookresearch/sam3/blob/main/LICENSE), a separate, non-OSI
 licence. See docs/ai-masks.md.
 
-AI denoise weights are not part of LightCraft and are never distributed with it.
+AI denoise weights are not part of LightKub and are never distributed with it.
 The default build offers user-supplied models only. The optional rawnind-model
 feature offers a separately downloaded RawNIND UtNet2 Bayer checkpoint under
 GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html), after the user accepts its terms.

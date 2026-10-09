@@ -14,7 +14,7 @@ use egui::Align2;
 use lightcraft_engine::export::{Destination, ExportOptions, PreparedExport, run_batch};
 use serde_json::{Value, json};
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::theme::Tokens;
 
 pub struct ExportTask {
@@ -34,7 +34,7 @@ impl ExportTask {
 }
 
 /// Start exporting `items` in the background. Errors per photo are collected, not fatal.
-pub fn start(app: &mut LightcraftApp, items: Vec<PreparedExport>, opts: ExportOptions, to: Destination) -> Result<Value, String> {
+pub fn start(app: &mut LightkubApp, items: Vec<PreparedExport>, opts: ExportOptions, to: Destination) -> Result<Value, String> {
     if app.export.is_some() {
         return Err("an export is already running".into());
     }
@@ -63,7 +63,7 @@ pub fn start(app: &mut LightcraftApp, items: Vec<PreparedExport>, opts: ExportOp
 }
 
 /// Per frame: draw the progress panel; when the batch finishes, report it.
-pub fn poll(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn poll(app: &mut LightkubApp, ctx: &egui::Context) {
     let Some(task) = &app.export else { return };
     match task.rx.try_recv() {
         Ok(r) => {

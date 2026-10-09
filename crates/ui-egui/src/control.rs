@@ -18,7 +18,7 @@ use std::sync::mpsc::Sender;
 
 use serde_json::{Value, json};
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 
 pub type ControlResponse = Value;
 
@@ -53,7 +53,7 @@ fn wrap(r: Result<Value, String>) -> Outcome {
     }
 }
 
-pub fn all_commands(app: &LightcraftApp) -> Value {
+pub fn all_commands(app: &LightkubApp) -> Value {
     let keymap = &app.ui.settings.keymap;
     let mut v: Vec<Value> = app
         .session
@@ -78,7 +78,7 @@ fn rect_json(r: egui::Rect) -> Value {
     json!([r.left(), r.top(), r.width(), r.height()])
 }
 
-pub fn inspect(app: &LightcraftApp, ctx: &egui::Context) -> Value {
+pub fn inspect(app: &LightkubApp, ctx: &egui::Context) -> Value {
     let r = ctx.content_rect();
     json!({
         "ui": serde_json::to_value(&app.ui).unwrap_or_default(),
@@ -120,7 +120,7 @@ pub fn inspect(app: &LightcraftApp, ctx: &egui::Context) -> Value {
 }
 
 /// Bytes held by the engine's caches and the renderer's (`ui.inspect` → `memory`).
-pub fn memory(app: &LightcraftApp) -> Value {
+pub fn memory(app: &LightkubApp) -> Value {
     let mut v = serde_json::to_value(app.session.memory_report()).unwrap_or_default();
     if let (Some(o), Value::Object(r)) = (v.as_object_mut(), app.renderer.memory()) {
         o.extend(r);
@@ -152,7 +152,7 @@ fn key_from(name: &str) -> Option<egui::Key> {
     })
 }
 
-fn push_drag(app: &mut LightcraftApp, a: egui::Pos2, b: egui::Pos2, steps: u64, m: egui::Modifiers) {
+fn push_drag(app: &mut LightkubApp, a: egui::Pos2, b: egui::Pos2, steps: u64, m: egui::Modifiers) {
     app.synthetic.push(egui::Event::PointerMoved(a));
     app.synthetic.push(egui::Event::PointerButton { pos: a, button: egui::PointerButton::Primary, pressed: true, modifiers: m });
     for i in 1..=steps.max(1) {
@@ -162,11 +162,11 @@ fn push_drag(app: &mut LightcraftApp, a: egui::Pos2, b: egui::Pos2, steps: u64, 
     app.synthetic.push(egui::Event::PointerButton { pos: b, button: egui::PointerButton::Primary, pressed: false, modifiers: m });
 }
 
-fn widget_rect(app: &LightcraftApp, id: &str) -> Option<egui::Rect> {
+fn widget_rect(app: &LightkubApp, id: &str) -> Option<egui::Rect> {
     app.widgets.iter().rev().find(|(w, _)| w == id).map(|(_, r)| *r)
 }
 
-pub fn handle(app: &mut LightcraftApp, ctx: &egui::Context, req: &ControlRequest) -> Outcome {
+pub fn handle(app: &mut LightkubApp, ctx: &egui::Context, req: &ControlRequest) -> Outcome {
     let p = &req.params;
     let s = |k: &str| p.get(k).and_then(Value::as_str);
     let f = |k: &str| p.get(k).and_then(Value::as_f64);
@@ -380,19 +380,19 @@ pub fn handle(app: &mut LightcraftApp, ctx: &egui::Context, req: &ControlRequest
 /// Shown when an export has nowhere to go (no folder typed or chosen, and no home folder to default to).
 pub const NO_EXPORT_FOLDER: &str = "Choose an export folder first.";
 
-/// Default export folder: `~/Pictures/LightCraft Exports` (`%USERPROFILE%\Pictures\LightCraft Exports`
+/// Default export folder: `~/Pictures/LightKub Exports` (`%USERPROFILE%\Pictures\LightKub Exports`
 /// on Windows, where `HOME` usually isn't set). Empty when no home folder is known.
 pub fn default_export_dir() -> String {
     let home = if cfg!(windows) { std::env::var_os("USERPROFILE").or_else(|| std::env::var_os("HOME")) } else { std::env::var_os("HOME") };
     home.filter(|h| !h.is_empty())
-        .map(|h| std::path::PathBuf::from(h).join("Pictures").join("LightCraft Exports").to_string_lossy().into_owned())
+        .map(|h| std::path::PathBuf::from(h).join("Pictures").join("LightKub Exports").to_string_lossy().into_owned())
         .unwrap_or_default()
 }
 
 /// Export the selected photos (UI command `app.export`). Params: see
 /// [`lightcraft_engine::export::ExportOptions::from_json`], plus `dir` (output folder) or `path`
 /// (exact output file, single photo), `ids` (default: the selection, else the active photo).
-pub fn export_active(app: &mut LightcraftApp, p: &Value) -> Result<Value, String> {
+pub fn export_active(app: &mut LightkubApp, p: &Value) -> Result<Value, String> {
     use lightcraft_engine::export::{Destination, ExportOptions, export_batch};
     let p = &app.session.export_params(p)?;
     let mut opts = ExportOptions::from_params(p).map_err(|e| e.to_string())?;
@@ -452,7 +452,7 @@ pub fn export_active(app: &mut LightcraftApp, p: &Value) -> Result<Value, String
     Ok(out)
 }
 
-pub fn save_screenshot(app: &mut LightcraftApp, image: &egui::ColorImage, path: Option<&str>) -> Value {
+pub fn save_screenshot(app: &mut LightkubApp, image: &egui::ColorImage, path: Option<&str>) -> Value {
     let [w, h] = image.size;
     let Some(path) = path else {
         return json!({"ok": true, "result": {"width": w, "height": h}});

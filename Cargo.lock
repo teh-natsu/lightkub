@@ -2975,24 +2975,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lightcraft"
-version = "0.4.0"
-dependencies = [
- "eframe",
- "egui",
- "lightcraft-codecs",
- "lightcraft-engine",
- "lightcraft-raster",
- "lightcraft-sysmem",
- "lightcraft-ui-egui",
- "log",
- "muda",
- "rfd",
- "serde_json",
- "winresource",
-]
-
-[[package]]
 name = "lightcraft-catalog"
 version = "0.4.0"
 dependencies = [
@@ -3005,21 +2987,6 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.21",
  "web-time",
-]
-
-[[package]]
-name = "lightcraft-cli"
-version = "0.4.0"
-dependencies = [
- "dhat",
- "lightcraft-codecs",
- "lightcraft-engine",
- "lightcraft-mcp",
- "lightcraft-merge",
- "lightcraft-raster",
- "lightcraft-sysmem",
- "lightcraft-ui-egui",
- "serde_json",
 ]
 
 [[package]]
@@ -3358,7 +3325,40 @@ dependencies = [
 ]
 
 [[package]]
-name = "lightcraft-web"
+name = "lightkub"
+version = "0.4.0"
+dependencies = [
+ "eframe",
+ "egui",
+ "lightcraft-codecs",
+ "lightcraft-engine",
+ "lightcraft-raster",
+ "lightcraft-sysmem",
+ "lightcraft-ui-egui",
+ "log",
+ "muda",
+ "rfd",
+ "serde_json",
+ "winresource",
+]
+
+[[package]]
+name = "lightkub-cli"
+version = "0.4.0"
+dependencies = [
+ "dhat",
+ "lightcraft-codecs",
+ "lightcraft-engine",
+ "lightcraft-mcp",
+ "lightcraft-merge",
+ "lightcraft-raster",
+ "lightcraft-sysmem",
+ "lightcraft-ui-egui",
+ "serde_json",
+]
+
+[[package]]
+name = "lightkub-web"
 version = "0.4.0"
 dependencies = [
  "crc32fast",

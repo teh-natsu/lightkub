@@ -1,7 +1,7 @@
-# LightCraft en español
+# LightKub en español
 
 Elegir **Editar → Idioma → Español** o **Ajustes → General → Idioma**. El cambio se aplica al
-momento y se conserva para el próximo inicio (`language: "es"` en `ui.json`). `LIGHTCRAFT_LANGUAGE`
+momento y se conserva para el próximo inicio (`language: "es"` en `ui.json`). `LIGHTKUB_LANGUAGE`
 acepta cualquier variante del español (`es`, `es-ES`, `es_MX.UTF-8`, `es-419`…).
 
 El catálogo en español cubre los menús, los métodos abreviados de teclado, la biblioteca, el
@@ -43,5 +43,5 @@ comprueba los marcadores al compilar. Las terminaciones de plural del inglés se
 
 ```sh
 cargo test -p lightcraft-ui-egui i18n::tests -- --nocapture
-LIGHTCRAFT_LANGUAGE=es lightcraft-cli snapshot --demo -o espanol.png --size 1600x1000
+LIGHTKUB_LANGUAGE=es lightkub-cli snapshot --demo -o espanol.png --size 1600x1000
 ```

@@ -6,7 +6,7 @@ use egui::{Rect, Sense, Stroke, StrokeKind, pos2, vec2};
 use lightcraft_engine::FilterChip;
 use serde_json::json;
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::theme::Tokens;
 use crate::widgets::register;
 
@@ -75,7 +75,7 @@ pub(crate) fn display_label(chip: &FilterChip, filter: &lightcraft_catalog::Filt
 }
 
 /// Draws the strip; does nothing without chips.
-pub fn show(app: &mut LightcraftApp, ui: &mut egui::Ui, chips: &[FilterChip]) {
+pub fn show(app: &mut LightkubApp, ui: &mut egui::Ui, chips: &[FilterChip]) {
     if chips.is_empty() {
         return;
     }

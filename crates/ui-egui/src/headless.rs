@@ -2,7 +2,7 @@
 //! the CPU ([`crate::softpaint`]) — no window, no GPU, no compositor.
 //!
 //! Two users:
-//! - [`Headless`]: a complete windowless app session (`lightcraft-cli snapshot`, tests). It plays
+//! - [`Headless`]: a complete windowless app session (`lightkub-cli snapshot`, tests). It plays
 //!   the role eframe plays for the desktop app: builds [`egui::RawInput`], runs `logic` + `ui`,
 //!   keeps a CPU mirror of the textures, executes viewport commands (`Screenshot` is answered with
 //!   a CPU-rendered frame, `InnerSize` resizes, `Close` quits). Control-protocol requests go
@@ -21,7 +21,7 @@ use egui::{Color32, ColorImage, RawInput, TextureId, ViewportCommand, ViewportId
 use serde_json::{Value, json};
 
 use crate::softpaint::{self, CpuTexture, Layered, TextureStore};
-use crate::{ControlRequest, LightcraftApp};
+use crate::{ControlRequest, LightkubApp};
 
 /// Background behind the panels (eframe's default clear colour, made opaque).
 const CLEAR: Color32 = Color32::from_rgb(12, 12, 12);
@@ -166,7 +166,7 @@ impl HeadlessView {
 /// A windowless app session: the app's `logic` + `ui` driven frame by frame into a
 /// [`HeadlessView`], with control-protocol requests answered by the shared handler.
 pub struct Headless {
-    pub app: LightcraftApp,
+    pub app: LightkubApp,
     pub view: HeadlessView,
     /// The largest texture the pretend GPU takes (what a WebGL device may report: 2048).
     pub max_texture_side: usize,
@@ -188,7 +188,7 @@ impl Headless {
     /// Wrap `app` (its control channel is replaced by the driver's).
     /// Invalid dimensions fall back to 1600×1000 at scale 1; external callers can use
     /// [`viewport_pixels`] to reject them before constructing the session.
-    pub fn new(app: LightcraftApp, size: [f32; 2], pixels_per_point: f32) -> Self {
+    pub fn new(app: LightkubApp, size: [f32; 2], pixels_per_point: f32) -> Self {
         let (size, pixels_per_point) = if viewport_pixels(size, pixels_per_point).is_ok() {
             (egui::Vec2::from(size), pixels_per_point)
         } else {
@@ -485,7 +485,7 @@ mod tests {
 
     #[test]
     fn shadow_screenshot_keeps_the_zoomed_hosts_size_and_scale() {
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::new(), crate::Services::default());
+        let mut app = LightkubApp::new(lightcraft_engine::Session::new(), crate::Services::default());
         app.ui.settings.gpu = false;
         let mut h = Headless::new(app, [480.0, 320.0], 2.0);
         let t = Duration::from_secs(5);
@@ -502,7 +502,7 @@ mod tests {
     #[test]
     fn control_resize_uses_effective_points_after_ui_zoom() {
         for scale in [0.9, 1.0, 2.0] {
-            let mut app = LightcraftApp::new(lightcraft_engine::Session::new(), crate::Services::default());
+            let mut app = LightkubApp::new(lightcraft_engine::Session::new(), crate::Services::default());
             app.ui.settings.gpu = false;
             let mut h = Headless::new(app, [480.0, 320.0], scale);
             let t = Duration::from_secs(5);
@@ -519,7 +519,7 @@ mod tests {
 
     #[test]
     fn control_resize_keeps_a_minimum_width_after_zooming_out() {
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::new(), crate::Services::default());
+        let mut app = LightkubApp::new(lightcraft_engine::Session::new(), crate::Services::default());
         app.ui.settings.gpu = false;
         let mut h = Headless::new(app, [480.0, 320.0], 1.0);
         h.view.ctx.set_zoom_factor(0.5);
@@ -534,7 +534,7 @@ mod tests {
 
     #[test]
     fn control_resize_rounds_in_native_points_after_a_fractional_zoom_out() {
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::new(), crate::Services::default());
+        let mut app = LightkubApp::new(lightcraft_engine::Session::new(), crate::Services::default());
         app.ui.settings.gpu = false;
         let mut h = Headless::new(app, [480.0, 320.0], 0.9);
         let t = Duration::from_secs(5);
@@ -550,7 +550,7 @@ mod tests {
 
     #[test]
     fn invalid_control_resize_preserves_the_headless_viewport() {
-        let app = LightcraftApp::new(lightcraft_engine::Session::new(), crate::Services::default());
+        let app = LightkubApp::new(lightcraft_engine::Session::new(), crate::Services::default());
         let mut h = Headless::new(app, [480.0, 320.0], 2.0);
         h.app.ui.settings.gpu = false;
         h.step();
@@ -575,7 +575,7 @@ mod tests {
 
     fn demo(size: [f32; 2]) -> Headless {
         let services = crate::Services { png: None, ..Default::default() };
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::with_demo(), services);
+        let mut app = LightkubApp::new(lightcraft_engine::Session::with_demo(), services);
         app.ui.view = crate::state::ViewMode::PhotoGrid;
         Headless::new(app, size, 1.0)
     }
@@ -730,7 +730,7 @@ mod tests {
     }
 
     /// Adding a face model: the dialog shows the file's terms, the model is installed only once they are
-    /// accepted, and a file LightCraft cannot use only says why.
+    /// accepted, and a file LightKub cannot use only says why.
     #[test]
     fn adding_a_face_model_shows_its_terms_and_installs_only_once_accepted() {
         use crate::state::Dialog;
@@ -1896,7 +1896,7 @@ mod tests {
         assert_eq!(h.app.ui.right, crate::state::RightPanel::Edit, "no-op outside tools");
     }
 
-    /// ⌘Q (File → Quit LightCraft) closes the window.
+    /// ⌘Q (File → Quit LightKub) closes the window.
     #[test]
     fn cmd_q_quits() {
         let mut h = demo([900.0, 600.0]);
@@ -2167,7 +2167,7 @@ mod tests {
         }
         std::fs::copy(dir.join("img0.png"), dir.join("img0-copy.png")).unwrap();
         let services = crate::Services { png: None, ..Default::default() };
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::with_demo().with_fs(), services);
+        let mut app = LightkubApp::new(lightcraft_engine::Session::with_demo().with_fs(), services);
         app.ui.view = crate::state::ViewMode::PhotoGrid;
         let mut h = Headless::new(app, [1300.0, 900.0], 1.0);
         let t = Duration::from_secs(10);
@@ -2224,7 +2224,7 @@ mod tests {
                 std::fs::write(dir.join(format!("img{i}.png")), png).unwrap();
             }
             let services = crate::Services { png: None, ..Default::default() };
-            let mut app = LightcraftApp::new(lightcraft_engine::Session::new().with_fs(), services);
+            let mut app = LightkubApp::new(lightcraft_engine::Session::new().with_fs(), services);
             app.ui.view = crate::state::ViewMode::PhotoGrid;
             let mut h = Headless::new(app, [1300.0, 900.0], 1.0);
             let t = Duration::from_secs(10);
@@ -2337,7 +2337,7 @@ mod tests {
         std::fs::write(&file, png).unwrap();
         let paths = vec![file.to_string_lossy().to_string()];
         let services = crate::Services { png: None, ..Default::default() };
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::with_demo().with_fs(), services);
+        let mut app = LightkubApp::new(lightcraft_engine::Session::with_demo().with_fs(), services);
         app.ui.view = crate::state::ViewMode::PhotoGrid;
         let mut h = Headless::new(app, [1300.0, 900.0], 1.0);
         let t = Duration::from_secs(10);
@@ -2354,7 +2354,7 @@ mod tests {
         let id = h.app.session.selection.active.expect("imported photo selected");
         h.request("engine.execute", json!({"command": "photo.delete", "params": {"ids": [id.0]}}), t);
         assert!(h.app.session.catalog.photo(id).unwrap().deleted);
-        let photo_items = |app: &LightcraftApp| -> Vec<String> {
+        let photo_items = |app: &LightkubApp| -> Vec<String> {
             let bar = crate::menubar::menu_bar(app);
             let items = &bar.iter().find(|(title, _)| title == "Photo").expect("Photo menu").1;
             items.iter().filter_map(|n| if let crate::menubar::MenuNode::Item { id, .. } = n { Some(id.clone()) } else { None }).collect()
@@ -2423,7 +2423,7 @@ mod tests {
         }
         let dest_s = dest.to_string_lossy().to_string();
         let services = crate::Services { png: None, pick_folder: Some(Box::new(move || Some(dest_s.clone()))), ..Default::default() };
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::with_demo().with_fs(), services);
+        let mut app = LightkubApp::new(lightcraft_engine::Session::with_demo().with_fs(), services);
         app.ui.view = crate::state::ViewMode::PhotoGrid;
         let mut h = Headless::new(app, [1300.0, 900.0], 1.0);
         let t = Duration::from_secs(10);
@@ -2473,7 +2473,7 @@ mod tests {
         let mut session = lightcraft_engine::Session::with_demo().with_fs();
         // undated files are filed by the import time
         session.clock = Box::new(|| "2026-01-14T05:58:48".to_string());
-        let mut app = LightcraftApp::new(session, services);
+        let mut app = LightkubApp::new(session, services);
         app.ui.view = crate::state::ViewMode::PhotoGrid;
         let mut h = Headless::new(app, [1300.0, 1000.0], 1.0);
         let t = Duration::from_secs(10);
@@ -2526,7 +2526,7 @@ mod tests {
         let services = crate::Services { png: None, pick_folder: Some(Box::new(move || Some(dest_s.clone()))), ..Default::default() };
         let mut session = lightcraft_engine::Session::with_demo().with_fs();
         session.clock = Box::new(|| "2026-01-14T05:58:48".to_string());
-        let mut app = LightcraftApp::new(session, services);
+        let mut app = LightkubApp::new(session, services);
         app.ui.view = crate::state::ViewMode::PhotoGrid;
         let mut h = Headless::new(app, [1300.0, 1000.0], 1.0);
         let t = Duration::from_secs(10);
@@ -2573,7 +2573,7 @@ mod tests {
         let lib = dir.join("lib");
         let mut session = lightcraft_engine::Session::with_demo().with_fs();
         session.open_library(&lib, false).unwrap();
-        let mut app = LightcraftApp::new(session, crate::Services { png: None, ..Default::default() });
+        let mut app = LightkubApp::new(session, crate::Services { png: None, ..Default::default() });
         app.ui.view = crate::state::ViewMode::PhotoGrid;
         let mut h = Headless::new(app, [1300.0, 1000.0], 1.0);
         let t = Duration::from_secs(10);
@@ -2606,31 +2606,19 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
-    /// Help ▸ About: the About, Contributors and Models tabs switch and paint (credits are
-    /// compiled in).
+    /// Help ▸ About opens and paints: the app, its version and fonts, and the "based on LightCraft" credit.
     #[test]
-    fn about_dialog_tabs_show_the_credits() {
+    fn about_dialog_shows_the_app_and_its_credit() {
         // an empty library: the dialog needs no photos, and no decodes compete with other tests
         let services = crate::Services { png: None, ..Default::default() };
-        let mut h = Headless::new(LightcraftApp::new(lightcraft_engine::Session::new(), services), [1300.0, 820.0], 1.0);
+        let mut h = Headless::new(LightkubApp::new(lightcraft_engine::Session::new(), services), [1300.0, 820.0], 1.0);
         let t = Duration::from_secs(10);
         let r = h.request("ui.menu.invoke", json!({"id": "app.about"}), t);
         assert_eq!(r["ok"], true, "{r}");
         assert_eq!(h.app.ui.dialog, Some(crate::state::Dialog::About));
-        // a new window sizes itself on its first frame: let it settle before clicking its tabs
-        h.step();
-        h.step();
-        for (i, (tab, _)) in crate::panels::dialogs::ABOUT_TABS.iter().enumerate().rev() {
-            let r = h.request("ui.clickWidget", json!({"id": format!("button:aboutTab-{tab}")}), t);
-            assert_eq!(r["ok"], true, "{tab}: {r}");
-            h.step();
-            let shown = h.view.ctx.data_mut(|d| d.get_temp::<u8>(egui::Id::new("about_tab")));
-            assert_eq!(shown.map(usize::from), Some(i), "{tab}");
-        }
-        h.request("ui.clickWidget", json!({"id": "button:aboutTab-contributors"}), t);
         let img = h.snapshot(SETTLE);
         assert_eq!(img.size, [1300, 820]);
-        assert_eq!(h.app.ui.dialog, Some(crate::state::Dialog::About), "switching tabs keeps the dialog open");
+        assert_eq!(h.app.ui.dialog, Some(crate::state::Dialog::About), "the dialog stays open");
     }
 
     /// Settings (⌘,): tabs switch, app settings change the UI state, library settings go through

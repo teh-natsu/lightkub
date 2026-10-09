@@ -940,7 +940,7 @@ mod tests {
 
     #[test]
     fn persistent_reimport_keeps_copy_and_collection_ids_and_capture_time() {
-        let dir = std::env::temp_dir().join(format!("lightcraft-lrcat-reimport-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("lightkub-lrcat-reimport-{}", std::process::id()));
         let mut s = crate::Session::new();
         s.open_library(&dir, false).unwrap();
         let mut data = sample();
@@ -1044,7 +1044,7 @@ mod tests {
             leaf(&mut bytes[(i + 1) * 2048..(i + 2) * 2048], 0, std::slice::from_ref(row));
         }
         leaf(&mut bytes[..2048], 100, &schema);
-        let path = std::env::temp_dir().join(format!("lightcraft-native-catalog-{}.lrcat", std::process::id()));
+        let path = std::env::temp_dir().join(format!("lightkub-native-catalog-{}.lrcat", std::process::id()));
         std::fs::write(&path, &bytes).unwrap();
         let catalog = read(&path).unwrap();
         assert_eq!(catalog.photos.len(), 1);

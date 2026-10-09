@@ -12,12 +12,12 @@ use serde_json::json;
 use crate::icons::{Icon, paint};
 use crate::theme::Tokens;
 use crate::widgets::{divider, icon_button, register, slider};
-use crate::{HoverPreview, LightcraftApp};
+use crate::{HoverPreview, LightkubApp};
 
 /// Long edge of preset thumbnails (px).
 const THUMB_EDGE: usize = 128;
 
-pub fn show(app: &mut LightcraftApp, ui: &mut egui::Ui) {
+pub fn show(app: &mut LightkubApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     egui::Panel::right("presets_panel")
         .exact_size(t.panel_w)

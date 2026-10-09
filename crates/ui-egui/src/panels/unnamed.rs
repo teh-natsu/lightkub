@@ -10,7 +10,7 @@ use std::sync::Arc;
 use egui::{Align2, Color32, Rect, RichText, Sense, Stroke, StrokeKind, pos2, vec2};
 use serde_json::{Value, json};
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::theme::Tokens;
 use crate::widgets::register;
 
@@ -60,7 +60,7 @@ pub fn parse(v: &Value) -> Unnamed {
 
 /// The unnamed faces, asked for again only when the catalog changed, or (while the scan runs and learns more faces) at
 /// most every few seconds, since putting look-alikes together looks at every pair.
-pub fn faces(app: &mut LightcraftApp, now: f64) -> Arc<Unnamed> {
+pub fn faces(app: &mut LightkubApp, now: f64) -> Arc<Unnamed> {
     let (rev, indexed) = (app.session.catalog.revision, app.caches.faces_indexed);
     if let Some((r, i, at, list)) = &app.caches.unnamed
         && *r == rev
@@ -78,7 +78,7 @@ pub fn faces(app: &mut LightcraftApp, now: f64) -> Arc<Unnamed> {
 }
 
 /// A click on face number `i` of `list`: select it (or deselect it), or with Shift every face from the last one clicked.
-fn click(app: &mut LightcraftApp, list: &Unnamed, i: usize, shift: bool) {
+fn click(app: &mut LightkubApp, list: &Unnamed, i: usize, shift: bool) {
     let Some(f) = list.faces.get(i) else { return };
     match app.ui.unnamed_anchor.filter(|_| shift) {
         Some(a) => {
@@ -99,13 +99,13 @@ fn click(app: &mut LightcraftApp, list: &Unnamed, i: usize, shift: bool) {
 }
 
 /// Name `faces` (photo, region) `name`, as one undo step.
-fn name(app: &mut LightcraftApp, faces: &[(u64, usize)], name: &str) {
+fn name(app: &mut LightkubApp, faces: &[(u64, usize)], name: &str) {
     let list: Vec<Value> = faces.iter().map(|(photo, index)| json!({"photo": photo, "index": index})).collect();
     let _ = app.run("faces.nameFaces", json!({"faces": list, "name": name}));
 }
 
 /// The bar above the faces while some are selected: how many, a box to name them all, and the people already named.
-pub fn naming_bar(app: &mut LightcraftApp, ui: &mut egui::Ui) {
+pub fn naming_bar(app: &mut LightkubApp, ui: &mut egui::Ui) {
     if app.ui.unnamed_selected.is_empty() {
         app.ui.unnamed_name.clear();
         return;
@@ -183,7 +183,7 @@ pub fn naming_bar(app: &mut LightcraftApp, ui: &mut egui::Ui) {
 }
 
 /// The heading of the section, at `at`, and what it says about where the faces come from.
-pub fn section_header(app: &mut LightcraftApp, ui: &mut egui::Ui, list: &Unnamed, at: egui::Pos2, right: f32) {
+pub fn section_header(app: &mut LightkubApp, ui: &mut egui::Ui, list: &Unnamed, at: egui::Pos2, right: f32) {
     let t = Tokens::get(ui.ctx());
     let count = if list.total > list.faces.len() { format!("{} of {}", list.faces.len(), list.total) } else { list.total.to_string() };
     let p = ui.painter();
@@ -224,7 +224,7 @@ pub fn section_header(app: &mut LightcraftApp, ui: &mut egui::Ui, list: &Unnamed
 }
 
 /// One face tile, number `i` of `list`.
-pub fn tile(app: &mut LightcraftApp, ui: &mut egui::Ui, list: &Unnamed, i: usize, r: Rect, f: &UnnamedFace, ppp: f32) {
+pub fn tile(app: &mut LightkubApp, ui: &mut egui::Ui, list: &Unnamed, i: usize, r: Rect, f: &UnnamedFace, ppp: f32) {
     let t = Tokens::get(ui.ctx());
     let key = (f.photo, f.index);
     let selected = app.ui.unnamed_selected.contains(&key);

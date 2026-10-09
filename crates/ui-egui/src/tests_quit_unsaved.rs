@@ -10,7 +10,7 @@ use lightcraft_engine::library::LibraryStores;
 use serde_json::json;
 
 use crate::headless::Headless;
-use crate::{LightcraftApp, Services};
+use crate::{LightkubApp, Services};
 
 const T: Duration = Duration::from_secs(20);
 
@@ -68,7 +68,7 @@ fn quitting_with_unsaved_changes_asks_first() {
     let mut s = lightcraft_engine::Session::new();
     let stores = LibraryStores { dir: "unplugged".into(), catalog: Box::new(store.clone()), files: Box::new(MemStore::new()), on_disk: false };
     s.open_library_in(stores, false).unwrap();
-    let app = LightcraftApp::new(s, Services { png: None, ..Default::default() });
+    let app = LightkubApp::new(s, Services { png: None, ..Default::default() });
     let mut h = Headless::new(app, [1200.0, 800.0], 1.0);
     h.step();
     // nothing unsaved: closing is fine
@@ -113,7 +113,7 @@ fn damaged_settings_file_is_shown() {
     let mut s = lightcraft_engine::Session::new();
     let stores = LibraryStores { dir: "lib".into(), catalog: Box::new(MemStore::new()), files: Box::new(files.clone()), on_disk: false };
     s.open_library_in(stores, false).unwrap();
-    let app = LightcraftApp::new(s, Services { png: None, ..Default::default() });
+    let app = LightkubApp::new(s, Services { png: None, ..Default::default() });
     let mut h = Headless::new(app, [1200.0, 800.0], 1.0);
     h.step();
     h.step();

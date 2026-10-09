@@ -132,7 +132,7 @@ pub fn install_fonts(ctx: &egui::Context) {
     ctx.set_fonts(font_definitions(lightcraft_engine::CRAFT_FONTS));
 }
 
-/// Inter (bundled) for Latin text, egui's default fonts, then the craft-fonts CJK faces as the last
+/// Inter (bundled) for Latin text, Anuphan (bundled) for Thai, egui's default fonts, then the craft-fonts CJK faces as the last
 /// fallback of every family — the active language's own script first, so shared Han characters keep
 /// that language's forms. Without craft-fonts (`craft` empty) CJK text has no glyphs and shows as
 /// boxes.
@@ -140,6 +140,10 @@ pub fn font_definitions(craft: &'static [lightcraft_engine::CraftFont]) -> FontD
     let mut fonts = FontDefinitions::default();
     fonts.font_data.insert("Inter".into(), Arc::new(FontData::from_static(include_bytes!("../../../assets/fonts/Inter-Regular.ttf"))));
     fonts.font_data.insert("Inter-SemiBold".into(), Arc::new(FontData::from_static(include_bytes!("../../../assets/fonts/Inter-SemiBold.ttf"))));
+    // Thai: Inter and egui's defaults have no Thai letters, so Anuphan follows Inter in every
+    // family, at the same weights.
+    fonts.font_data.insert("Anuphan".into(), Arc::new(FontData::from_static(include_bytes!("../../../assets/fonts/Anuphan-Regular.ttf"))));
+    fonts.font_data.insert("Anuphan-SemiBold".into(), Arc::new(FontData::from_static(include_bytes!("../../../assets/fonts/Anuphan-SemiBold.ttf"))));
     // Craft-fonts faces in preference order for a family drawn in `style`.
     let fallback = |style: &str| {
         lightcraft_engine::fonts::cjk_fallback(craft, crate::i18n::language().script(), style)
@@ -154,22 +158,24 @@ pub fn font_definitions(craft: &'static [lightcraft_engine::CraftFont]) -> FontD
         }
     }
     let defaults: Vec<String> = fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default();
-    let mut prop = vec!["Inter".to_string()];
+    let mut prop = vec!["Inter".to_string(), "Anuphan".to_string()];
     prop.extend(defaults.iter().cloned());
     prop.extend(regular);
     fonts.families.insert(FontFamily::Proportional, prop);
-    let mut semi = vec!["Inter-SemiBold".to_string()];
+    let mut semi = vec!["Inter-SemiBold".to_string(), "Anuphan-SemiBold".to_string()];
     semi.extend(defaults);
     semi.extend(bold);
     fonts.families.insert(FontFamily::Name(FONT_SEMIBOLD.into()), semi);
-    fonts.families.entry(FontFamily::Monospace).or_default().extend(fallback("Regular"));
+    let mono = fonts.families.entry(FontFamily::Monospace).or_default();
+    mono.push("Anuphan".to_string());
+    mono.extend(fallback("Regular"));
     fonts
 }
 
-/// The embedded font families for the About box: Inter, plus the craft-fonts families when built
-/// with them.
+/// The embedded font families for the About box: Inter and Anuphan, plus the craft-fonts families
+/// when built with them.
 pub fn font_credits() -> String {
-    let mut families = vec!["Inter"];
+    let mut families = vec!["Inter", "Anuphan"];
     for f in lightcraft_engine::CRAFT_FONTS {
         if !families.contains(&f.family) {
             families.push(f.family);

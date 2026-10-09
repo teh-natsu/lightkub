@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LightKub</title>
+  <link rel="icon" href="data:,">
+  <meta name="description" content="LightKub: open-source photo library and raw developer, running in your browser (WASM).">
+  <style>
+    :root { color-scheme: dark; }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #1c1c1c; }
+    canvas#lightkub_canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    #lightkub_loading {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      color: #b8b8b8; font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; pointer-events: none;
+    }
+    #lightkub_status { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <canvas id="lightkub_canvas"></canvas>
+  <div id="lightkub_loading">Loading LightKub…</div>
+  <div id="lightkub_status" aria-live="polite"></div>
+  <script type="module">
+    import init, { start, command } from "./lightkub_web.js";
+    (async () => {
+      // Compile once; the render workers (worker.js) instantiate the same compiled module.
+      const module = await WebAssembly.compileStreaming(fetch("./lightkub_web_bg.wasm"));
+      globalThis.lightkubModule = module;
+      await init({ module_or_path: module });
+      // automation: `await lightkub.command("library.info", "{}")` → JSON text
+      globalThis.lightkub = { command };
+      start();
+    })().catch((e) => {
+      console.error(e);
+      const el = document.getElementById("lightkub_loading");
+      if (el) el.textContent = "LightKub failed to load: " + e;
+    });
+  </script>
+</body>
+</html>

@@ -11,7 +11,7 @@ use egui::{Align2, Color32, Rect, RichText, Sense, Stroke, StrokeKind, pos2, vec
 use lightcraft_catalog::Person;
 use serde_json::json;
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::theme::Tokens;
 use crate::widgets::register;
 
@@ -56,7 +56,7 @@ pub(super) fn fit(painter: &egui::Painter, text: &str, font: egui::FontId, max_w
     (1..chars.len()).rev().map(|n| chars[..n].iter().collect::<String>() + "…").find(|s| width(s) <= max_w).unwrap_or_else(|| "…".to_string())
 }
 
-pub fn show(app: &mut LightcraftApp, ui: &mut egui::Ui) {
+pub fn show(app: &mut LightkubApp, ui: &mut egui::Ui) {
     if let Some(name) = app.ui.person_page.clone() {
         return super::person::show(app, ui, &name);
     }
@@ -152,7 +152,7 @@ pub fn show(app: &mut LightcraftApp, ui: &mut egui::Ui) {
     });
 }
 
-fn card(app: &mut LightcraftApp, ui: &mut egui::Ui, person: &Person, r: Rect, edge: f32, ppp: f32, selected: bool) {
+fn card(app: &mut LightkubApp, ui: &mut egui::Ui, person: &Person, r: Rect, edge: f32, ppp: f32, selected: bool) {
     let t = Tokens::get(ui.ctx());
     let face = Rect::from_min_size(r.min, vec2(edge, edge));
     let resp = ui.interact(r, egui::Id::new(("person-card", &person.name)), Sense::click());

@@ -1,6 +1,6 @@
 //! Native file dialogs for commands, off the UI thread (#191). A synchronous dialog blocks the
 //! thread that shows it, and on the desktop that was the UI thread: the window stopped answering
-//! the compositor (GNOME marked LightCraft "not responding" and offered to kill it), the menu the
+//! the compositor (GNOME marked LightKub "not responding" and offered to kill it), the menu the
 //! command came from stayed drawn, and the control channel went quiet until the dialog closed.
 //!
 //! A host that can run a dialog elsewhere installs a [`Picker`] in `Services`: it starts the
@@ -10,7 +10,7 @@
 //! web, where browser pickers are asynchronous already; tests) answer through the synchronous
 //! services as before.
 
-use crate::{LightcraftApp, Services};
+use crate::{LightkubApp, Services};
 use serde_json::{Value, json};
 use std::sync::mpsc::{Receiver, TryRecvError};
 
@@ -91,7 +91,7 @@ pub enum Picked {
 /// in; a dialog already up for the command is not opened twice. Without one, `now` asks the
 /// synchronous service.
 pub fn ask(
-    app: &mut LightcraftApp,
+    app: &mut LightkubApp,
     command: &str,
     params: &Value,
     key: &'static str,
@@ -131,7 +131,7 @@ pub fn with_answer(params: &Value, key: &str, kind: PickKind, paths: &[String]) 
 
 /// Each frame: run the commands whose dialogs have closed with something chosen; forget the
 /// cancelled ones and those whose dialog went away without an answer.
-pub fn poll(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn poll(app: &mut LightkubApp, ctx: &egui::Context) {
     if app.pending_picks.is_empty() {
         return;
     }
@@ -175,7 +175,7 @@ mod tests {
     /// sender that answers it. Frames run through the headless harness, so [`poll`] and the import
     /// scan happen as in the app.
     fn app_with_picker() -> (Headless, Asked) {
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default());
+        let mut app = LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default());
         let asked: Asked = Default::default();
         let a = asked.clone();
         app.services.picker = Some(Box::new(move |req| {
@@ -273,7 +273,7 @@ mod tests {
     fn without_a_picker_the_synchronous_dialog_answers_at_once() {
         let dir = std::env::temp_dir().join(format!("lc-pick-sync-{}", std::process::id()));
         let photo = photo_in(&dir);
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default());
+        let mut app = LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default());
         let p = photo.clone();
         app.services.pick_files = Some(Box::new(move || vec![p.clone()]));
         let mut h = Headless::new(app, [1200.0, 800.0], 1.0);
@@ -281,7 +281,7 @@ mod tests {
         assert!(h.app.pending_picks.is_empty());
         assert_eq!(import_sources(&mut h), Some(vec![photo]));
         // and a host with neither shows nothing, as before
-        let mut bare = LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default());
+        let mut bare = LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default());
         assert_eq!(bare.run("file.addPhotos", json!({})).unwrap(), Value::Null);
         assert!(bare.run("file.importPresets", json!({})).is_err(), "no dialog on this platform");
         let _ = std::fs::remove_dir_all(&dir);

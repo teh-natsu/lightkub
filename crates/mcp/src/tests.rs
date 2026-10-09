@@ -20,7 +20,7 @@ fn initialize_negotiates_version() {
     let mut s = server();
     let r = rpc(&mut s, 1, "initialize", json!({"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "t", "version": "1"}}));
     assert_eq!(r["result"]["protocolVersion"], "2025-03-26");
-    assert_eq!(r["result"]["serverInfo"]["name"], "lightcraft");
+    assert_eq!(r["result"]["serverInfo"]["name"], "lightkub");
     assert!(r["result"]["capabilities"]["tools"].is_object());
     let r = rpc(&mut s, 2, "initialize", json!({"protocolVersion": "1999-01-01"}));
     assert_eq!(r["result"]["protocolVersion"], PROTOCOL_VERSION);
@@ -121,7 +121,7 @@ fn path_writes_never_replace_an_original() {
 }
 
 /// Issue #181: a misspelled or unreadable `app.export` param is an error through the headless
-/// backend (what `lightcraft-cli run` and the MCP `export` tool use), not a silent default.
+/// backend (what `lightkub-cli run` and the MCP `export` tool use), not a silent default.
 #[test]
 fn export_refuses_unknown_params_and_bad_values() {
     let mut b = Headless::demo();
@@ -222,7 +222,7 @@ fn resources() {
         let text = r["result"]["contents"][0]["text"].as_str().unwrap_or_else(|| panic!("{uri}: {r}"));
         serde_json::from_str::<Value>(text).unwrap();
     }
-    assert_eq!(rpc(&mut s, 99, "resources/read", json!({"uri": "lightcraft://nope"}))["error"]["code"], -32002);
+    assert_eq!(rpc(&mut s, 99, "resources/read", json!({"uri": "lightkub://nope"}))["error"]["code"], -32002);
 }
 
 /// `select_photos` with an id that is not in the library is a tool error, and the photo that was

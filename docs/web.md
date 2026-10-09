@@ -1,6 +1,6 @@
-# LightCraft in the browser
+# LightKub in the browser
 
-`apps/lightcraft-web` runs the same egui UI as the desktop app (`crates/ui-egui`) in the browser,
+`apps/lightkub-web` runs the same egui UI as the desktop app (`crates/ui-egui`) in the browser,
 compiled to WebAssembly and drawn with WebGL2 (eframe's `glow` backend).
 
 ## Build and run locally
@@ -18,7 +18,7 @@ it's missing or a different version.
 Build, then serve:
 
 ```sh
-cargo xtask web            # → <target>/web/{index.html, worker.js, lightcraft_web.js, lightcraft_web_bg.wasm}
+cargo xtask web            # → <target>/web/{index.html, worker.js, lightkub_web.js, lightkub_web_bg.wasm}
 cargo xtask web --serve    # build, then serve on http://127.0.0.1:8080/ (or `--serve 9000`)
 cargo xtask web --dev      # unoptimized build with debug info (faster to compile, slow to run)
 ```
@@ -89,7 +89,7 @@ are the same in every version, so serve them with `Cache-Control: no-cache` (not
     (`lightcraft-catalog`), plus `presets.json`, `view.json`, `prefs.json` and `ui.json` (panel
     layout). The catalog `Store` is a memory mirror loaded at start-up; every change is flushed in
     the background within a frame or two, each file replaced atomically, in modification order
-    (`apps/lightcraft-web/src/files.rs`). View state and UI prefs are saved every second when they
+    (`apps/lightkub-web/src/files.rs`). View state and UI prefs are saved every second when they
     change (a tab can close without notice).
   - Known limitation: the browser storage has no file locks, so two tabs of the same origin open
     the same library and the last one to write a snapshot wins (the desktop app and the CLI lock
@@ -120,8 +120,8 @@ are the same in every version, so serve them with `Cache-Control: no-cache` (not
     2 s until it works (`web.stats` → `saveError`).
   - A picked or dropped photo whose bytes can't be stored is not added (it would be gone after
     a reload); a notice says why.
-  - One tab at a time: the page holds a Web Lock (`navigator.locks`, `lightcraft-library`); a
-    second tab or window shows "LightCraft is already open in another tab" instead of loading
+  - One tab at a time: the page holds a Web Lock (`navigator.locks`, `lightkub-library`); a
+    second tab or window shows "LightKub is already open in another tab" instead of loading
     its own copy (two copies would overwrite each other's saves). Browsers without Web Locks
     aren't protected.
   - If the stored library can't be opened, a notice says the session is temporary and nothing
@@ -146,7 +146,7 @@ are the same in every version, so serve them with `Cache-Control: no-cache` (not
 - **Export downloads the file.** *Export…* (<kbd>⌘⇧E</kbd>) runs the same `app.export` path as
   the desktop app (`lightcraft_engine::export`: JPEG/PNG/TIFF/WebP, sizing, naming). The host's
   `write` service hands each file to the browser as a download instead of writing it to disk.
-- **Automation.** `await lightcraft.command("library.info", "{}")` runs any engine or UI command
+- **Automation.** `await lightkub.command("library.info", "{}")` runs any engine or UI command
   by id on the next frame and resolves to the JSON result (`web.stats` reports storage, workers
   and the render queue). This is how the headless-Chrome checks drive the page.
 
@@ -179,7 +179,7 @@ Open `http://127.0.0.1:8080/?bench` to run a scripted measurement:
 The page then logs one console line:
 
 ```
-lightcraft-bench {"first_frame_ms":…,"thumbs_done_ms":…,"slider_draft_ms":[…],"slider_draft_median_ms":…,"slider_job_ms":[…],"release_full_ms":…}
+lightkub-bench {"first_frame_ms":…,"thumbs_done_ms":…,"slider_draft_ms":[…],"slider_draft_median_ms":…,"slider_job_ms":[…],"release_full_ms":…}
 ```
 
 - `slider_draft_ms`: time from the `develop.set` command until the new loupe texture is ready.

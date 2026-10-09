@@ -13,14 +13,14 @@ use crate::icons::{Icon, paint};
 use crate::state::RightPanel;
 use crate::theme::Tokens;
 use crate::widgets::{divider, icon_button, register};
-use crate::{HoverPreview, LightcraftApp};
+use crate::{HoverPreview, LightkubApp};
 
 /// Long edge of the variant thumbnails (px).
 const THUMB_EDGE: usize = 256;
 /// Thumbnail columns.
 const COLUMNS: usize = 2;
 
-pub fn show(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
+pub fn show(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId) {
     let t = Tokens::get(ui.ctx());
     let d = (*app.session.develop_of(id).unwrap_or_default()).clone();
     // header: back + title
@@ -143,16 +143,7 @@ fn with_profile_id(d: &DevelopSettings, profile_id: &str) -> DevelopSettings {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn cell_ui(
-    app: &mut LightcraftApp,
-    ui: &mut egui::Ui,
-    d: &DevelopSettings,
-    id: PhotoId,
-    tag: &str,
-    p: &(String, String, String),
-    cell: Rect,
-    th: f32,
-) {
+fn cell_ui(app: &mut LightkubApp, ui: &mut egui::Ui, d: &DevelopSettings, id: PhotoId, tag: &str, p: &(String, String, String), cell: Rect, th: f32) {
     let (p_id, p_name, p_group) = (p.0.as_str(), p.1.as_str(), p.2.as_str());
     let t = Tokens::get(ui.ctx());
     let key = if tag.is_empty() { format!("profileCell:{p_id}") } else { format!("profileCell:{tag}:{p_id}") };

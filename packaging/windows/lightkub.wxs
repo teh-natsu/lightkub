@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  LightKub MSI (WiX Toolset v5: `dotnet tool install -g wix`). Built by package.ps1:
+
+    wix build lightkub.wxs -arch x64 -d Version=1.2.3 -d BinDir=... -d IconPath=... -o out.msi
+
+  Per-machine install into Program Files, a Start Menu shortcut, `.pcraft` owned by LightKub,
+  and LightKub offered under "Open with" for PSD/PSB and the image formats it reads (without
+  taking over the user's default app for them).
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+      Name="LightKub"
+      Manufacturer="Nattpol Chaisri"
+      Version="$(var.Version)"
+      UpgradeCode="B722C5A2-7CBB-454E-BBF1-F6287B63A29F"
+      Scope="perMachine"
+      Compressed="yes"
+      Language="1033">
+    <SummaryInformation Description="LightKub photo library and raw developer" Manufacturer="Nattpol Chaisri" />
+    <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
+         (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of LightKub is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="LightkubIcon.ico" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="LightkubIcon.ico" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/teh-natsu/lightkub" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://github.com/teh-natsu/lightkub/releases" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/teh-natsu/lightkub/issues" />
+
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="LightKub" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <Feature Id="Main" Title="LightKub" Level="1">
+      <ComponentGroupRef Id="LightkubFiles" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="LightkubFiles" Directory="INSTALLFOLDER">
+      <Component Id="LightkubApp" Guid="47343F23-164E-41CC-8F16-A2DE433517EB">
+        <File Id="LightkubExe" Source="$(var.BinDir)\lightkub.exe" KeyPath="yes">
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="LightKub"
+              Description="LightKub photo library and raw developer" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+              Icon="LightkubIcon.ico" IconIndex="0" />
+        </File>
+
+        <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\lightkub.exe" Value="[#LightkubExe]" Type="string" />
+      </Component>
+
+      <Component Id="LightkubCli">
+        <File Id="LightkubCliExe" Source="$(var.BinDir)\lightkub-cli.exe" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

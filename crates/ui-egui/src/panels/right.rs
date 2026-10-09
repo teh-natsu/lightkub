@@ -5,13 +5,13 @@ use egui::{Align2, Rect, Sense, pos2, vec2};
 use lightcraft_catalog::PhotoId;
 use serde_json::json;
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::icons::{Icon, paint};
 use crate::state::RightPanel;
 use crate::theme::Tokens;
 use crate::widgets::{divider, register, slider, text_button};
 
-pub fn show(app: &mut LightcraftApp, ui: &mut egui::Ui) {
+pub fn show(app: &mut LightkubApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     let frame = egui::Frame::NONE.fill(t.chrome).stroke(egui::Stroke::new(1.0, t.divider));
     // the presets column and the left sidebar are laid out after this panel: leave them their room
@@ -101,7 +101,7 @@ fn aspect_label(aspect: Option<(u32, u32)>, original: Option<f64>) -> String {
 }
 
 /// "Custom" row of the aspect menu: two number fields and an Apply button (`crop.aspect` `[w, h]`).
-fn custom_aspect(app: &mut LightcraftApp, ui: &mut egui::Ui) {
+fn custom_aspect(app: &mut LightkubApp, ui: &mut egui::Ui) {
     let key = egui::Id::new("crop-custom-aspect");
     let (mut w, mut h): (String, String) = ui.data_mut(|d| d.get_temp(key)).unwrap_or_else(|| ("3".into(), "2".into()));
     let mut apply = false;
@@ -128,7 +128,7 @@ fn custom_aspect(app: &mut LightcraftApp, ui: &mut egui::Ui) {
     ui.data_mut(|d| d.insert_temp(key, (w, h)));
 }
 
-fn crop(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
+fn crop(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId) {
     let d = app.session.develop_of(id).unwrap_or_default();
     header(ui, "Crop");
     padded(ui, |ui| {
@@ -289,7 +289,7 @@ fn crop(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
     }
 }
 
-fn remove(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
+fn remove(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId) {
     let d = app.session.develop_of(id).unwrap_or_default();
     header(ui, "Remove");
     padded(ui, |ui| {
@@ -410,7 +410,7 @@ fn remove(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
     });
 }
 
-fn red_eye(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
+fn red_eye(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId) {
     let d = app.session.develop_of(id).unwrap_or_default();
     header(ui, "Red Eye");
     padded(ui, |ui| {
@@ -474,7 +474,7 @@ fn red_eye(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
     });
 }
 
-fn info(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
+fn info(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId) {
     let Some(p) = app.session.catalog.photo(id).cloned() else { return };
     header(ui, "Info");
     let t = Tokens::get(ui.ctx());
@@ -715,7 +715,7 @@ fn human_size(bytes: u64) -> String {
 /// A labelled metadata text field: the typed text lives in egui memory while focused and is
 /// saved (photo.setMeta `key`) when the field loses focus.
 /// Copyright Status: Unknown / Copyrighted / Public Domain (`xmpRights:Marked`).
-fn copyright_status(app: &mut LightcraftApp, ui: &mut egui::Ui, current: lightcraft_catalog::CopyrightStatus) {
+fn copyright_status(app: &mut LightkubApp, ui: &mut egui::Ui, current: lightcraft_catalog::CopyrightStatus) {
     let t = Tokens::get(ui.ctx());
     ui.label(egui::RichText::new(crate::i18n::tr("Copyright Status")).size(11.5).color(t.text_dim));
     let r = egui::ComboBox::from_id_salt("info-copyright-status").selected_text(crate::i18n::tr(current.label())).show_ui(ui, |ui| {
@@ -729,7 +729,7 @@ fn copyright_status(app: &mut LightcraftApp, ui: &mut egui::Ui, current: lightcr
     ui.add_space(6.0);
 }
 
-fn meta_field(app: &mut LightcraftApp, ui: &mut egui::Ui, label: &str, key: &str, value: &str, lines: usize) {
+fn meta_field(app: &mut LightkubApp, ui: &mut egui::Ui, label: &str, key: &str, value: &str, lines: usize) {
     let t = Tokens::get(ui.ctx());
     ui.label(egui::RichText::new(crate::i18n::tr(label)).size(11.5).color(t.text_dim));
     let id = egui::Id::new(("info-field", key));
@@ -748,7 +748,7 @@ fn meta_field(app: &mut LightcraftApp, ui: &mut egui::Ui, label: &str, key: &str
     ui.add_space(6.0);
 }
 
-fn keywords(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
+fn keywords(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId) {
     let Some(p) = app.session.catalog.photo(id).cloned() else { return };
     header(ui, "Keywords");
     let t = Tokens::get(ui.ctx());
@@ -838,7 +838,7 @@ fn keywords(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
 
 /// The keyword set: pick a set, then nine buttons (⌥1–⌥9) that toggle its keywords on the
 /// selected photos; "Save as Set…" keeps the current nine under a name.
-fn keyword_set(app: &mut LightcraftApp, ui: &mut egui::Ui, have: &[String]) {
+fn keyword_set(app: &mut LightkubApp, ui: &mut egui::Ui, have: &[String]) {
     let t = Tokens::get(ui.ctx());
     let sets = lightcraft_engine::cmd::keywords::keyword_sets_json(&app.session);
     let current = sets["current"].as_str().unwrap_or_default().to_string();
@@ -901,7 +901,7 @@ fn keyword_set(app: &mut LightcraftApp, ui: &mut egui::Ui, have: &[String]) {
     });
 }
 
-fn versions(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
+fn versions(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId) {
     let Some(p) = app.session.catalog.photo(id).cloned() else { return };
     header(ui, "Versions");
     let t = Tokens::get(ui.ctx());
@@ -910,7 +910,7 @@ fn versions(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
             let _ = app.run("version.create", json!({}));
         }
         ui.add_space(8.0);
-        // Named (made by you) and Auto (made by LightCraft) versions
+        // Named (made by you) and Auto (made by LightKub) versions
         let tab_id = egui::Id::new("versions-tab");
         let mut auto: bool = ui.data(|d| d.get_temp(tab_id)).unwrap_or(false);
         let named_n = p.versions.iter().filter(|v| !v.auto).count();
@@ -1009,7 +1009,7 @@ fn short_time(iso: &str) -> String {
     }
 }
 
-fn activity(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
+fn activity(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId) {
     let Some(p) = app.session.catalog.photo(id).cloned() else { return };
     header(ui, "History");
     let t = Tokens::get(ui.ctx());

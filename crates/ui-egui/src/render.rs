@@ -865,17 +865,17 @@ mod thumbnail_tests {
             std::mem::take(&mut self.0.borrow_mut().finished)
         }
     }
-    fn fixture() -> (crate::LightcraftApp, std::rc::Rc<std::cell::RefCell<Work>>, egui::Context) {
+    fn fixture() -> (crate::LightkubApp, std::rc::Rc<std::cell::RefCell<Work>>, egui::Context) {
         fixture_with(Session::new(), (*photo()).clone())
     }
-    fn fixture_with(mut s: Session, photo: Photo) -> (crate::LightcraftApp, std::rc::Rc<std::cell::RefCell<Work>>, egui::Context) {
+    fn fixture_with(mut s: Session, photo: Photo) -> (crate::LightkubApp, std::rc::Rc<std::cell::RefCell<Work>>, egui::Context) {
         s.media.file_loader = Some(Arc::new(|_, _| {
             let mut image = lightcraft_raster::Rgb32f::new(8, 8);
             image.data.fill([0.3, 0.2, 0.1]);
             Ok((image, Default::default()))
         }));
         s.catalog.apply(Op::AddPhoto { photo: Box::new(photo) }).unwrap();
-        let mut app = crate::LightcraftApp::new(s, crate::Services::default());
+        let mut app = crate::LightkubApp::new(s, crate::Services::default());
         app.renderer.keep_pixels = true;
         let work = std::rc::Rc::new(std::cell::RefCell::new(Work::default()));
         app.renderer.set_offload(Box::new(Manual(work.clone())));
@@ -886,11 +886,11 @@ mod thumbnail_tests {
     fn take_job(work: &std::rc::Rc<std::cell::RefCell<Work>>) -> (Slot, RenderJob) {
         work.borrow_mut().jobs.pop().unwrap()
     }
-    fn finish(app: &mut crate::LightcraftApp, work: &std::rc::Rc<std::cell::RefCell<Work>>, ctx: &egui::Context, slot: Slot, result: RenderResult) {
+    fn finish(app: &mut crate::LightkubApp, work: &std::rc::Rc<std::cell::RefCell<Work>>, ctx: &egui::Context, slot: Slot, result: RenderResult) {
         work.borrow_mut().finished.push((slot, result, 0.0));
         app.renderer.poll(ctx, &mut app.session);
     }
-    fn request(app: &mut crate::LightcraftApp) {
+    fn request(app: &mut crate::LightkubApp) {
         crate::panels::grid::request_thumb(app, PhotoId(1), 256, 10);
     }
 

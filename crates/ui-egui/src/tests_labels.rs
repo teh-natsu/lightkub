@@ -8,7 +8,7 @@ use serde_json::json;
 
 use crate::headless::Headless;
 use crate::state::ViewMode;
-use crate::{LightcraftApp, Services};
+use crate::{LightkubApp, Services};
 
 const SETTLE: Duration = Duration::from_secs(120);
 
@@ -20,7 +20,7 @@ fn app(view: ViewMode) -> Headless {
     }
     s.execute("library.sort", &json!({"key": "fileName", "ascending": true, "group": "none"})).unwrap();
     s.execute("library.select", &json!({"ids": [1]})).unwrap();
-    let mut h = Headless::new(LightcraftApp::new(s, Services { png: None, ..Default::default() }), [1200.0, 800.0], 1.0);
+    let mut h = Headless::new(LightkubApp::new(s, Services { png: None, ..Default::default() }), [1200.0, 800.0], 1.0);
     h.app.ui.view = view;
     h.app.ui.right = crate::state::RightPanel::None;
     h.app.ui.thumb_size = 160.0;

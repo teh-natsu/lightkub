@@ -14,7 +14,7 @@ use serde_json::json;
 
 use crate::headless::Headless;
 use crate::state::{RightPanel, ViewMode};
-use crate::{LightcraftApp, Services};
+use crate::{LightkubApp, Services};
 
 /// What one file-system call takes on the "NAS".
 const SLOW: Duration = Duration::from_millis(400);
@@ -44,11 +44,11 @@ impl Calls {
 fn offline_library(calls: &Calls) -> Session {
     let mut s = Session::new();
     for i in 0..N {
-        let path = format!("/lightcraft-offline-nas/IMG_{i:03}.jpg");
+        let path = format!("/lightkub-offline-nas/IMG_{i:03}.jpg");
         let p = Photo::new(PhotoId(i + 1), Source::File { path }, &format!("IMG_{i:03}.jpg"), "JPEG", 600, 400, "2026-01-01T00:00:00");
         s.catalog.apply(Op::AddPhoto { photo: Box::new(p) }).unwrap();
     }
-    s.media.smart_dir = Some(std::env::temp_dir().join("lightcraft-offline-smart-previews-none"));
+    s.media.smart_dir = Some(std::env::temp_dir().join("lightkub-offline-smart-previews-none"));
     let c = calls.clone();
     s.media.availability.set_probe(Arc::new(move |_| {
         c.record();
@@ -71,7 +71,7 @@ fn max_frame(h: &mut Headless, frames: usize) -> Duration {
 #[test]
 fn offline_originals_never_block_a_frame() {
     let calls = Calls::default();
-    let app = LightcraftApp::new(offline_library(&calls), Services { png: None, ..Default::default() });
+    let app = LightkubApp::new(offline_library(&calls), Services { png: None, ..Default::default() });
     let mut h = Headless::new(app, [1200.0, 800.0], 1.0);
     let ui_thread = std::thread::current().id();
     h.app.ui.view = ViewMode::PhotoGrid;
@@ -141,7 +141,7 @@ fn import_reads_files_off_the_ui_thread_and_can_be_cancelled() {
             ..Default::default()
         })
     }));
-    let app = LightcraftApp::new(s, Services { png: None, ..Default::default() });
+    let app = LightkubApp::new(s, Services { png: None, ..Default::default() });
     let mut h = Headless::new(app, [1200.0, 800.0], 1.0);
     let ui_thread = std::thread::current().id();
     h.step();

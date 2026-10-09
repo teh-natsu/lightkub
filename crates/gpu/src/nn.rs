@@ -3,8 +3,8 @@
 //!
 //! The runner has a device of its own, so a denoise job and the interactive renders are separate contexts that the
 //! driver time-slices, and a failure of one never takes the other down. It respects the same switches as GPU rendering
-//! (`LIGHTCRAFT_GPU`, `LIGHTCRAFT_GPU_BACKEND`, the GPU preference) and the same crash sentinel around device creation.
-//! `LIGHTCRAFT_GPU_ADAPTER` picks an adapter by (part of) its name, e.g. to try another card.
+//! (`LIGHTKUB_GPU`, `LIGHTKUB_GPU_BACKEND`, the GPU preference) and the same crash sentinel around device creation.
+//! `LIGHTKUB_GPU_ADAPTER` picks an adapter by (part of) its name, e.g. to try another card.
 //!
 //! Every failure is an `Err` (never a panic), and a device that errs or is lost stops being used: callers then run the
 //! CPU runner. The kernels (`wgsl/nn_conv.wgsl`, `wgsl/nn_pool.wgsl`) are tested against the plain-loop reference
@@ -67,7 +67,7 @@ fn dev() -> Result<&'static Dev, String> {
 }
 
 fn create_device() -> Result<Dev, String> {
-    let Some(backends) = crate::backend::compute_backends() else { return Err("disabled by LIGHTCRAFT_GPU_BACKEND=off".into()) };
+    let Some(backends) = crate::backend::compute_backends() else { return Err("disabled by LIGHTKUB_GPU_BACKEND=off".into()) };
     crate::backend::with_init_marker(backends, || {
         std::panic::catch_unwind(|| make_device(backends)).unwrap_or_else(|_| Err("device creation panicked".into()))
     })
@@ -77,7 +77,7 @@ fn make_device(backends: wgpu::Backends) -> Result<Dev, String> {
     let mut desc = wgpu::InstanceDescriptor::new_without_display_handle();
     desc.backends = backends;
     let instance = wgpu::Instance::new(desc);
-    let wanted = std::env::var("LIGHTCRAFT_GPU_ADAPTER").ok().map(|s| s.trim().to_lowercase()).filter(|s| !s.is_empty());
+    let wanted = std::env::var("LIGHTKUB_GPU_ADAPTER").ok().map(|s| s.trim().to_lowercase()).filter(|s| !s.is_empty());
     let adapter = match &wanted {
         Some(w) => {
             let all = pollster::block_on(instance.enumerate_adapters(backends));

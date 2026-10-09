@@ -1,11 +1,12 @@
 //! `log` records on stderr for the native desktop app and CLI (#168). The web build installs
 //! eframe's `WebLogger` instead.
 //!
-//! Warnings and errors are shown by default. `LIGHTCRAFT_LOG` or `RUST_LOG` picks another level
-//! (`off`, `error`, `warn`, `info`, `debug`, `trace`); `LIGHTCRAFT_LOG` wins when both are set.
-//! `RUST_LOG` also accepts per-target directives (`lightcraft=debug,wgpu=warn`): a bare level
-//! applies to everything, and the most verbose `lightcraft…=level` directive sets LightCraft's.
-//! Below warnings only LightCraft's own records are shown, so `info` and `debug` aren't drowned
+//! Warnings and errors are shown by default. `LIGHTKUB_LOG` or `RUST_LOG` picks another level
+//! (`off`, `error`, `warn`, `info`, `debug`, `trace`); `LIGHTKUB_LOG` wins when both are set.
+//! `RUST_LOG` also accepts per-target directives (`lightkub=debug,wgpu=warn`): a bare level
+//! applies to everything, and the most verbose `lightkub…=level` or `lightcraft…=level` directive sets
+//! LightKub's.
+//! Below warnings only LightKub's own records are shown, so `info` and `debug` aren't drowned
 //! out by the GPU and windowing libraries.
 
 use log::{Level, LevelFilter, Metadata, Record};
@@ -24,7 +25,7 @@ impl StderrLog {
 
 impl log::Log for StderrLog {
     fn enabled(&self, m: &Metadata) -> bool {
-        m.level() <= self.level && (m.level() <= Level::Warn || m.target().starts_with("lightcraft"))
+        m.level() <= self.level && (m.level() <= Level::Warn || is_ours(m.target()))
     }
     fn log(&self, r: &Record) {
         if self.enabled(r.metadata()) {
@@ -46,9 +47,15 @@ fn parse_level(s: &str) -> Option<LevelFilter> {
     }
 }
 
-/// The level that `LIGHTCRAFT_LOG` / `RUST_LOG` ask for; warnings when neither names one.
-pub fn level_from(lightcraft_log: Option<&str>, rust_log: Option<&str>) -> LevelFilter {
-    if let Some(l) = lightcraft_log.and_then(parse_level) {
+/// LightKub's own log targets: the apps (`lightkub…`) and the library crates, which keep
+/// upstream's `lightcraft-` prefix.
+fn is_ours(target: &str) -> bool {
+    target.starts_with("lightkub") || target.starts_with("lightcraft")
+}
+
+/// The level that `LIGHTKUB_LOG` / `RUST_LOG` ask for; warnings when neither names one.
+pub fn level_from(lightkub_log: Option<&str>, rust_log: Option<&str>) -> LevelFilter {
+    if let Some(l) = lightkub_log.and_then(parse_level) {
         return l;
     }
     let Some(rust_log) = rust_log else { return LevelFilter::Warn };
@@ -57,7 +64,7 @@ pub fn level_from(lightcraft_log: Option<&str>, rust_log: Option<&str>) -> Level
     for directive in rust_log.split(',') {
         match directive.split_once('=') {
             None => bare = parse_level(directive).or(bare),
-            Some((target, level)) if target.trim().starts_with("lightcraft") => {
+            Some((target, level)) if is_ours(target.trim()) => {
                 if let Some(l) = parse_level(level) {
                     ours = Some(ours.map_or(l, |o| o.max(l)));
                 }
@@ -71,7 +78,7 @@ pub fn level_from(lightcraft_log: Option<&str>, rust_log: Option<&str>) -> Level
 /// Install the stderr logger at the level the environment asks for. Does nothing when a logger is
 /// already installed.
 pub fn install(prefix: &'static str) {
-    let level = level_from(std::env::var("LIGHTCRAFT_LOG").ok().as_deref(), std::env::var("RUST_LOG").ok().as_deref());
+    let level = level_from(std::env::var("LIGHTKUB_LOG").ok().as_deref(), std::env::var("RUST_LOG").ok().as_deref());
     static LOGGER: std::sync::OnceLock<StderrLog> = std::sync::OnceLock::new();
     if log::set_logger(LOGGER.get_or_init(|| StderrLog::new(prefix, level))).is_ok() {
         log::set_max_level(level);
@@ -91,13 +98,13 @@ mod tests {
         assert_eq!(level_from(None, Some("TRACE")), LevelFilter::Trace);
         assert_eq!(level_from(None, Some("off")), LevelFilter::Off);
         assert_eq!(level_from(Some("info"), None), LevelFilter::Info);
-        assert_eq!(level_from(Some("error"), Some("debug")), LevelFilter::Error, "LIGHTCRAFT_LOG wins");
-        assert_eq!(level_from(Some("nonsense"), Some("debug")), LevelFilter::Debug, "an unknown LIGHTCRAFT_LOG is ignored");
+        assert_eq!(level_from(Some("error"), Some("debug")), LevelFilter::Error, "LIGHTKUB_LOG wins");
+        assert_eq!(level_from(Some("nonsense"), Some("debug")), LevelFilter::Debug, "an unknown LIGHTKUB_LOG is ignored");
     }
 
     #[test]
-    fn rust_log_directives_set_lightcraft_s_level() {
-        assert_eq!(level_from(None, Some("lightcraft=debug,wgpu=warn")), LevelFilter::Debug);
+    fn rust_log_directives_set_lightkub_s_level() {
+        assert_eq!(level_from(None, Some("lightkub=debug,wgpu=warn")), LevelFilter::Debug);
         assert_eq!(level_from(None, Some("wgpu_core=trace")), LevelFilter::Warn, "other crates' directives don't apply");
         assert_eq!(level_from(None, Some("error,lightcraft_gpu=info")), LevelFilter::Info);
         assert_eq!(level_from(None, Some("lightcraft_gpu=info,lightcraft_engine=trace")), LevelFilter::Trace);
@@ -105,7 +112,7 @@ mod tests {
     }
 
     #[test]
-    fn only_lightcraft_records_below_warnings() {
+    fn only_lightkub_records_below_warnings() {
         let log = StderrLog::new("test", LevelFilter::Debug);
         let meta = |level, target| Metadata::builder().level(level).target(target).build();
         assert!(log.enabled(&meta(Level::Warn, "wgpu_core::device")));

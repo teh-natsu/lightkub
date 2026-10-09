@@ -8,7 +8,7 @@ use std::sync::Arc;
 use egui::{Align2, Color32, Pos2, Rect, RichText, Sense, Stroke, StrokeKind, pos2, vec2};
 use serde_json::{Value, json};
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::theme::Tokens;
 use crate::widgets::register;
 
@@ -62,7 +62,7 @@ pub fn parse(v: &Value) -> PersonPage {
 
 /// The page for `name`, asked for again only when the catalog changed, or (while the scan runs) at most once a second
 /// as it learns more faces.
-fn page_for(app: &mut LightcraftApp, name: &str, now: f64) -> Arc<PersonPage> {
+fn page_for(app: &mut LightkubApp, name: &str, now: f64) -> Arc<PersonPage> {
     let (rev, indexed) = (app.session.catalog.revision, app.caches.faces_indexed);
     if let Some((n, r, i, at, page)) = &app.caches.person_page
         && n == name
@@ -85,7 +85,7 @@ enum Hit {
     Dismiss,
 }
 
-pub fn show(app: &mut LightcraftApp, ui: &mut egui::Ui, name: &str) {
+pub fn show(app: &mut LightkubApp, ui: &mut egui::Ui, name: &str) {
     let t = Tokens::get(ui.ctx());
     let now = ui.input(|i| i.time);
     let page = page_for(app, name, now);
@@ -226,7 +226,7 @@ pub fn show(app: &mut LightcraftApp, ui: &mut egui::Ui, name: &str) {
 
 /// One face tile. A confirmed one opens its photo when clicked; a "More" one is confirmed when clicked, and has a × that
 /// hides it.
-fn tile(app: &mut LightcraftApp, ui: &mut egui::Ui, r: Rect, f: &Face, ppp: f32, more: bool, name: &str) -> Hit {
+fn tile(app: &mut LightkubApp, ui: &mut egui::Ui, r: Rect, f: &Face, ppp: f32, more: bool, name: &str) -> Hit {
     let t = Tokens::get(ui.ctx());
     let salt = if more { "more-face" } else { "person-face" };
     let resp = ui.interact(r, egui::Id::new((salt, f.photo, f.index)), Sense::click());

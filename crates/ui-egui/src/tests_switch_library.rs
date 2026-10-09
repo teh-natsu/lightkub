@@ -4,7 +4,7 @@
 
 use serde_json::json;
 
-use crate::{LightcraftApp, Services};
+use crate::{LightkubApp, Services};
 
 #[test]
 fn opening_another_library_drops_the_old_librarys_cached_panels() {
@@ -21,7 +21,7 @@ fn opening_another_library_drops_the_old_librarys_cached_panels() {
     session.open_library(&a, false).unwrap();
     assert!(!session.catalog.is_empty());
 
-    let mut app = LightcraftApp::new(session, Services::default());
+    let mut app = LightkubApp::new(session, Services::default());
     let (cat, caches) = (&app.session.catalog, &mut app.caches);
     assert!(caches.counts(cat).total > 0);
     assert!(!caches.keyword_tree(cat).is_empty());

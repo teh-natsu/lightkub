@@ -10,7 +10,7 @@
 use serde::Serialize;
 use serde_json::{Value, json};
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::menus::MenuEntry;
 use crate::state::{RightPanel, ViewMode};
 
@@ -218,24 +218,7 @@ const LAYOUT: &[(&str, &[&str])] = &[
             "@Tools",
         ],
     ),
-    (
-        "Help",
-        &[
-            "app.discord",
-            "app.feedback",
-            "---",
-            "app.website",
-            "app.github",
-            "app.artcraft",
-            "---",
-            "app.whatsNew",
-            "app.shortcuts",
-            "app.systemInfo",
-            "app.openLogFolder",
-            "---",
-            "app.about",
-        ],
-    ),
+    ("Help", &["app.whatsNew", "app.shortcuts", "app.systemInfo", "app.openLogFolder", "---", "app.about"]),
 ];
 
 /// Items that always end their menu in their own separator group, after the entries appended
@@ -260,14 +243,14 @@ const HIDDEN: &[&str] = &[
 ];
 
 /// The selection includes a photo in Recently Deleted.
-pub(crate) fn selection_deleted(app: &LightcraftApp) -> bool {
+pub(crate) fn selection_deleted(app: &LightkubApp) -> bool {
     let s = &app.session;
     s.selection.ids.iter().copied().chain(s.selection.active).any(|id| s.catalog.photo(id).is_some_and(|p| p.deleted))
 }
 
 /// Items only some hosts have are left out of the others' menus (the web build's library backup);
 /// Restore and Delete Permanently replace Delete for photos in Recently Deleted.
-fn host_supports(app: &LightcraftApp, id: &str) -> bool {
+fn host_supports(app: &LightkubApp, id: &str) -> bool {
     match id {
         "file.backupLibrary" => app.services.backup_library.is_some(),
         "file.restoreLibrary" => app.services.restore_library.is_some(),
@@ -284,7 +267,7 @@ fn item(id: &str, params: Value, label: impl Into<String>, shortcut: Option<&str
 }
 
 /// Checked state of toggles and radio items.
-pub fn checked(app: &LightcraftApp, id: &str) -> Option<bool> {
+pub fn checked(app: &LightkubApp, id: &str) -> Option<bool> {
     let u = &app.ui;
     let panel = |p: RightPanel| Some(u.right == p);
     match id {
@@ -333,7 +316,7 @@ pub fn checked(app: &LightcraftApp, id: &str) -> Option<bool> {
 }
 
 /// Labels that follow the state ("Undo Exposure", "Delete 3 Photos").
-fn live_label(app: &LightcraftApp, id: &str, label: &str) -> String {
+fn live_label(app: &LightkubApp, id: &str, label: &str) -> String {
     let n = app.session.selection.ids.len();
     match id {
         "edit.undo" => {
@@ -351,7 +334,7 @@ fn live_label(app: &LightcraftApp, id: &str, label: &str) -> String {
 }
 
 /// The parameterized submenus.
-fn expanded(app: &LightcraftApp, name: &str) -> Option<Vec<MenuNode>> {
+fn expanded(app: &LightkubApp, name: &str) -> Option<Vec<MenuNode>> {
     let active = app.session.active().and_then(|id| app.session.catalog.photo(id).cloned());
     let has = active.is_some();
     Some(match name {
@@ -583,7 +566,7 @@ fn expanded(app: &LightcraftApp, name: &str) -> Option<Vec<MenuNode>> {
     })
 }
 
-fn node(app: &LightcraftApp, e: &MenuEntry) -> MenuNode {
+fn node(app: &LightkubApp, e: &MenuEntry) -> MenuNode {
     // Shift+P picks and advances in Library; don't advertise it on Presets in those views.
     let shortcut = if e.id == "panel.presets" && crate::shortcuts::library_grid(app) { None } else { e.shortcut.as_deref() };
     item(&e.id, Value::Null, live_label(app, &e.id, &e.label), shortcut, e.enabled, checked(app, &e.id))
@@ -615,7 +598,7 @@ fn tidy(v: Vec<MenuNode>) -> Vec<MenuNode> {
 }
 
 /// The whole menu bar: (title, items) per menu in [`MENUS`] order.
-pub fn menu_bar(app: &LightcraftApp) -> Vec<(String, Vec<MenuNode>)> {
+pub fn menu_bar(app: &LightkubApp) -> Vec<(String, Vec<MenuNode>)> {
     let entries: Vec<MenuEntry> =
         crate::menus::menu_entries(app).into_iter().filter(|e| !HIDDEN.contains(&e.id.as_str()) && host_supports(app, &e.id)).collect();
     let mut used = vec![false; entries.len()];
@@ -680,7 +663,7 @@ pub fn menu_bar(app: &LightcraftApp) -> Vec<(String, Vec<MenuNode>)> {
 
 /// Run a menu item. Rating, flag and label items behave like their keys (the active photo only in
 /// Compare/Survey; Auto Advance moves on).
-pub fn run_item(app: &mut LightcraftApp, id: &str, params: Value) -> Result<Value, String> {
+pub fn run_item(app: &mut LightkubApp, id: &str, params: Value) -> Result<Value, String> {
     let mut params = if params.is_null() { json!({}) } else { params };
     let culling_cmd = matches!(id, "photo.rate" | "photo.flag" | "photo.label" | "photo.pick" | "photo.reject" | "photo.unflag");
     if culling_cmd {
@@ -735,7 +718,7 @@ pub fn bar_width(ui: &egui::Ui) -> f32 {
 
 /// The in-window menu bar (hosts without a native one): one dropdown per menu, or a single
 /// "Menu" button when the space is too narrow. Returns the width used.
-pub fn show_in_window(app: &mut LightcraftApp, ui: &mut egui::Ui, max_width: f32) -> f32 {
+pub fn show_in_window(app: &mut LightkubApp, ui: &mut egui::Ui, max_width: f32) -> f32 {
     let t = crate::theme::Tokens::get(ui.ctx());
     let bar = menu_bar(app);
     let font = t.font(13.0);
@@ -891,8 +874,8 @@ fn nodes_ui(ui: &mut egui::Ui, nodes: &[MenuNode], mac: bool, clicked: &mut Opti
 mod tests {
     use super::*;
 
-    fn app() -> LightcraftApp {
-        LightcraftApp::new(lightcraft_engine::Session::with_demo(), Default::default())
+    fn app() -> LightkubApp {
+        LightkubApp::new(lightcraft_engine::Session::with_demo(), Default::default())
     }
 
     fn find<'a>(nodes: &'a [MenuNode], id: &str) -> Option<&'a MenuNode> {
@@ -965,7 +948,7 @@ mod tests {
     /// absent from the desktop's menus, present and wired to the host where it provides them.
     #[test]
     fn library_backup_items_follow_the_host() {
-        let all = |app: &LightcraftApp| -> Vec<MenuNode> { menu_bar(app).into_iter().flat_map(|(_, v)| v).collect() };
+        let all = |app: &LightkubApp| -> Vec<MenuNode> { menu_bar(app).into_iter().flat_map(|(_, v)| v).collect() };
         let mut desktop = app();
         assert!(find(&all(&desktop), "file.backupLibrary").is_none() && find(&all(&desktop), "file.restoreLibrary").is_none());
         assert!(run_item(&mut desktop, "file.backupLibrary", Value::Null).is_err(), "not available without the host");
@@ -979,7 +962,7 @@ mod tests {
             restore_library: Some(Box::new(|_: &mut lightcraft_engine::Session| Ok(json!({"started": true})))),
             ..Default::default()
         };
-        let mut web = LightcraftApp::new(lightcraft_engine::Session::with_demo(), services);
+        let mut web = LightkubApp::new(lightcraft_engine::Session::with_demo(), services);
         let bar = all(&web);
         for id in ["file.backupLibrary", "file.restoreLibrary"] {
             assert!(matches!(find(&bar, id), Some(MenuNode::Item { enabled: true, .. })), "{id}");
@@ -1131,16 +1114,8 @@ mod tests {
     }
 
     #[test]
-    fn help_opens_the_docs_and_merge_last_needs_photos() {
+    fn merge_last_needs_photos() {
         let mut app = app();
-        let opened = std::sync::Arc::new(std::sync::Mutex::new(Vec::<String>::new()));
-        let o = opened.clone();
-        app.services.open_url = Some(Box::new(move |u: &str| {
-            o.lock().unwrap().push(u.to_string());
-            Ok(())
-        }));
-        run_item(&mut app, "app.help", Value::Null).unwrap();
-        assert_eq!(opened.lock().unwrap().as_slice(), [crate::links::HELP]);
         // merging with the last settings needs a selection of two or more
         let first = app.session.visible()[0].0;
         app.session.execute("library.select", &json!({"ids": [first]})).unwrap();
@@ -1152,7 +1127,7 @@ mod tests {
     #[test]
     fn open_log_folder_reveals_the_hosts_log_file() {
         let mut app = app();
-        let help = |app: &LightcraftApp| menu_bar(app).into_iter().find(|(t, _)| t == "Help").map(|(_, items)| items).unwrap_or_default();
+        let help = |app: &LightkubApp| menu_bar(app).into_iter().find(|(t, _)| t == "Help").map(|(_, items)| items).unwrap_or_default();
         assert!(matches!(find(&help(&app), "app.openLogFolder"), Some(MenuNode::Item { enabled: false, .. })), "listed in Help, off without a log");
         assert!(!crate::menus::ui_enabled(&app, "app.openLogFolder"));
         assert!(run_item(&mut app, "app.openLogFolder", Value::Null).is_err());
@@ -1166,7 +1141,7 @@ mod tests {
         assert!(!crate::menus::ui_enabled(&app, "app.openLogFolder"));
         assert!(run_item(&mut app, "app.openLogFolder", Value::Null).is_err());
         assert!(shown.lock().unwrap().is_empty());
-        let log = "/home/a/.config/lightcraft/logs/lightcraft.log";
+        let log = "/home/a/.config/lightkub/logs/lightkub.log";
         app.services.log_file = Some(log.into());
         assert!(crate::menus::ui_enabled(&app, "app.openLogFolder"));
         assert!(matches!(find(&help(&app), "app.openLogFolder"), Some(MenuNode::Item { enabled: true, .. })));
@@ -1187,7 +1162,7 @@ mod tests {
         let img = lightcraft_raster::Rgba8::from_fn(16, 12, |x, y| [(x * 9) as u8, (y * 11) as u8, 50, 255]);
         let o = lightcraft_engine::export::ExportOptions { format: lightcraft_engine::export::ExportFormat::Png, ..Default::default() };
         std::fs::write(dir.join("a/one.png"), lightcraft_engine::export::encode_image(&img, &o).unwrap()).unwrap();
-        let mut app = LightcraftApp::new(lightcraft_engine::Session::new().with_fs(), Default::default());
+        let mut app = LightkubApp::new(lightcraft_engine::Session::new().with_fs(), Default::default());
         app.session.execute("library.import", &json!({"paths": [dir.join("a").to_string_lossy()]})).unwrap();
         std::fs::rename(dir.join("a/one.png"), dir.join("b/one.png")).unwrap();
         let r = run_item(&mut app, "file.findMissing", json!({"folder": dir.join("b").to_string_lossy(), "wait": true})).unwrap();

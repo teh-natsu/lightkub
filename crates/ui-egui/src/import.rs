@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::sync::atomic::Ordering;
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::render::Slot;
 use crate::theme::Tokens;
 use crate::widgets::register;
@@ -394,7 +394,7 @@ pub struct ScanTask {
 }
 
 /// Scan `paths` in the background, then open the review dialog (see [`poll_scan`]).
-pub fn open(app: &mut LightcraftApp, paths: Vec<String>) -> Result<Value, String> {
+pub fn open(app: &mut LightkubApp, paths: Vec<String>) -> Result<Value, String> {
     if app.scan.is_some() {
         return Err("a scan is already running".into());
     }
@@ -418,7 +418,7 @@ pub fn open(app: &mut LightcraftApp, paths: Vec<String>) -> Result<Value, String
 /// once, the folder is listed and read on a worker thread (a network share can take minutes),
 /// and the photos then join the view in small batches under a progress window. A browse already
 /// running is replaced; the import review's scan is not.
-pub fn browse(app: &mut LightcraftApp, path: &str, subfolders: Option<bool>) -> Result<Value, String> {
+pub fn browse(app: &mut LightkubApp, path: &str, subfolders: Option<bool>) -> Result<Value, String> {
     let dir = std::path::absolute(std::path::Path::new(path)).map_err(|e| e.to_string())?;
     if !dir.is_dir() {
         return Err(format!("{path}: not a folder"));
@@ -477,7 +477,7 @@ pub fn browse(app: &mut LightcraftApp, path: &str, subfolders: Option<bool>) -> 
 }
 
 /// Collect a finished scan and open the review (called every frame).
-pub fn poll_scan(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn poll_scan(app: &mut LightkubApp, ctx: &egui::Context) {
     let Some(task) = app.scan.as_ref() else { return };
     ctx.request_repaint_after(std::time::Duration::from_millis(100));
     let out = match task.rx.try_recv() {
@@ -526,7 +526,7 @@ pub fn poll_scan(app: &mut LightcraftApp, ctx: &egui::Context) {
 }
 
 /// The progress window while a folder is being scanned.
-pub fn scan_progress(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn scan_progress(app: &mut LightkubApp, ctx: &egui::Context) {
     let Some(task) = &app.scan else { return };
     let t = Tokens::get(ctx);
     let total = task.progress.total.load(Ordering::Relaxed);
@@ -564,7 +564,7 @@ impl ScanTask {
 }
 
 /// Start importing the dialog's checked files (the dialog's OK / `ui.dialog.confirm`).
-pub fn start(app: &mut LightcraftApp, d: &ImportDialog) -> Result<Value, String> {
+pub fn start(app: &mut LightkubApp, d: &ImportDialog) -> Result<Value, String> {
     let queue = d.selected_paths();
     if queue.is_empty() {
         return Err("no photos selected".into());
@@ -615,7 +615,7 @@ pub fn start(app: &mut LightcraftApp, d: &ImportDialog) -> Result<Value, String>
 }
 
 /// Start importing `paths` (files or folders) in the background, e.g. dropped on the window.
-pub fn start_paths(app: &mut LightcraftApp, paths: Vec<String>) -> Result<Value, String> {
+pub fn start_paths(app: &mut LightkubApp, paths: Vec<String>) -> Result<Value, String> {
     if app.import.is_some() || app.scan.as_ref().is_some_and(|t| !t.browse) {
         return Err("an import is running".into());
     }
@@ -627,7 +627,7 @@ pub fn start_paths(app: &mut LightcraftApp, paths: Vec<String>) -> Result<Value,
 
 /// Advance the import in progress (called every frame): start its worker, then add the batches it
 /// has readied to the catalog.
-pub fn tick(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn tick(app: &mut LightkubApp, ctx: &egui::Context) {
     let Some(mut task) = app.import.take() else { return };
     if task.run.is_none() {
         let mut p = task.params.clone();
@@ -671,7 +671,7 @@ pub fn tick(app: &mut LightcraftApp, ctx: &egui::Context) {
 }
 
 /// Add one readied batch to the catalog (an undo step merged into the import's at the end).
-fn commit_batch(app: &mut LightcraftApp, task: &mut ImportTask, prepared: lightcraft_engine::import::Prepared) {
+fn commit_batch(app: &mut LightkubApp, task: &mut ImportTask, prepared: lightcraft_engine::import::Prepared) {
     let Some(run) = task.run.as_ref() else { return };
     let n = prepared.len();
     let (opts, now, album, album_name) = (&run.opts, run.now.as_str(), run.album, run.album_name.clone());
@@ -708,7 +708,7 @@ fn commit_batch(app: &mut LightcraftApp, task: &mut ImportTask, prepared: lightc
 }
 
 /// The import is done (or cancelled): one undo step, select the first photo, say what happened.
-fn finish(app: &mut LightcraftApp, ctx: &egui::Context, task: ImportTask) {
+fn finish(app: &mut LightkubApp, ctx: &egui::Context, task: ImportTask) {
     let steps = app.session.undo.len().saturating_sub(task.undo0);
     let plural = |n: usize| if n == 1 { "" } else { "s" };
     let label = if task.imported == 0 && task.restored > 0 {
@@ -768,7 +768,7 @@ fn finish(app: &mut LightcraftApp, ctx: &egui::Context, task: ImportTask) {
 }
 
 /// The photos among `ids` that are in Recently Deleted (each once).
-fn deleted_of(app: &LightcraftApp, ids: &[u64]) -> Vec<u64> {
+fn deleted_of(app: &LightkubApp, ids: &[u64]) -> Vec<u64> {
     let mut v: Vec<u64> =
         ids.iter().copied().filter(|&id| app.session.catalog.photo(lightcraft_catalog::PhotoId(id)).is_some_and(|p| p.deleted)).collect();
     v.sort_unstable();
@@ -778,7 +778,7 @@ fn deleted_of(app: &LightcraftApp, ids: &[u64]) -> Vec<u64> {
 
 /// Select the library photos an import skipped as duplicates of, in Recently Deleted (side panel
 /// opened, with how to get them back) or in All Photos, and say so. `false` when there are none.
-fn show_existing(app: &mut LightcraftApp, ctx: &egui::Context, existing: &[u64]) -> bool {
+fn show_existing(app: &mut LightkubApp, ctx: &egui::Context, existing: &[u64]) -> bool {
     let deleted = deleted_of(app, existing);
     let (kind, mut ids) = if deleted.is_empty() { ("all", existing.to_vec()) } else { ("recentlyDeleted", deleted) };
     ids.sort_unstable();
@@ -806,7 +806,7 @@ fn show_existing(app: &mut LightcraftApp, ctx: &egui::Context, existing: &[u64])
 
 /// The progress window while an import runs, with Cancel (files already copied or added stay;
 /// nothing new is started).
-pub fn progress(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn progress(app: &mut LightkubApp, ctx: &egui::Context) {
     let Some(task) = &app.import else { return };
     let t = Tokens::get(ctx);
     let frac = task.done as f32 / task.total.max(1) as f32;
@@ -839,7 +839,7 @@ pub fn progress(app: &mut LightcraftApp, ctx: &egui::Context) {
 }
 
 /// The dialog body: options, then the candidate grid.
-pub fn body(app: &mut LightcraftApp, ui: &mut egui::Ui, d: &mut ImportDialog) {
+pub fn body(app: &mut LightkubApp, ui: &mut egui::Ui, d: &mut ImportDialog) {
     let t = Tokens::get(ui.ctx());
     let n = d.candidates.len();
     let dups = d.candidates.iter().filter(|c| c.duplicate.is_some()).count();
@@ -1168,7 +1168,7 @@ pub fn body(app: &mut LightcraftApp, ui: &mut egui::Ui, d: &mut ImportDialog) {
     });
 }
 
-fn candidate_cell(app: &mut LightcraftApp, ui: &mut egui::Ui, d: &mut ImportDialog, i: usize, rect: Rect) {
+fn candidate_cell(app: &mut LightkubApp, ui: &mut egui::Ui, d: &mut ImportDialog, i: usize, rect: Rect) {
     let t = Tokens::get(ui.ctx());
     let c = d.candidates[i].clone();
     let ok = d.importable(i);
@@ -1334,7 +1334,7 @@ pub const DEFAULT_FOLDER_TEMPLATE: &str = "{date:%Y}/{date:%Y%m%d}";
 
 /// Where the first selected photo would be copied to (destination, folders, name), for the
 /// dialog's example line; `None` without a photo or with an unusable folder template.
-pub fn example_destination(app: &LightcraftApp, d: &ImportDialog) -> Option<String> {
+pub fn example_destination(app: &LightkubApp, d: &ImportDialog) -> Option<String> {
     let c = d.candidates.iter().zip(&d.checked).enumerate().find(|(i, (_, on))| **on && d.importable(*i)).map(|(_, (c, _))| c)?;
     let organize = match d.organize_param().ok()? {
         Some(o) => lightcraft_engine::import::Organize::parse(&o)?,

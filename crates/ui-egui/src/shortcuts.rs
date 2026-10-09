@@ -7,7 +7,7 @@ use std::sync::OnceLock;
 use egui::{Key, Modifiers};
 use serde_json::{Value, json};
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 
 /// The user's changes to the keymap: command id → shortcut (`""` = no shortcut). Saved with the
 /// app settings (`ui.json`); commands not listed keep their declared shortcut.
@@ -128,7 +128,7 @@ pub fn reset(keymap: &mut Keymap, id: &str) -> Result<Vec<&'static str>, String>
 }
 
 /// `app.setShortcut {id, shortcut?, reset?}`: `shortcut` null or `""` removes it.
-pub fn set_shortcut(app: &mut LightcraftApp, p: &Value) -> Result<Value, String> {
+pub fn set_shortcut(app: &mut LightkubApp, p: &Value) -> Result<Value, String> {
     let id = p.get("id").and_then(Value::as_str).ok_or("missing id")?;
     let keymap = &mut app.ui.settings.keymap;
     let lost = if p.get("reset").and_then(Value::as_bool).unwrap_or(false) {
@@ -281,7 +281,7 @@ fn matches(i: &egui::InputState, m: Modifiers, k: Key) -> bool {
     })
 }
 
-pub fn handle(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn handle(app: &mut LightkubApp, ctx: &egui::Context) {
     if !matches!(app.ui.dialog, Some(crate::state::Dialog::Shortcuts)) {
         app.recording_shortcut = None;
     }
@@ -332,7 +332,7 @@ pub fn handle(app: &mut LightcraftApp, ctx: &egui::Context) {
     use crate::panels::compare;
     // rating/flag/label keys: in Compare/Survey they act on the active photo only; Shift+key or
     // Auto Advance then moves on (next candidate in Compare, next photo elsewhere)
-    let cull = |app: &mut LightcraftApp, id: &str, mut params: serde_json::Value, advance: bool| {
+    let cull = |app: &mut LightkubApp, id: &str, mut params: serde_json::Value, advance: bool| {
         compare::target_active(app, &mut params);
         let ok = app.run(id, params).is_ok();
         if ok && (advance || app.ui.auto_advance) {
@@ -489,7 +489,7 @@ pub fn handle(app: &mut LightcraftApp, ctx: &egui::Context) {
     }
 }
 
-pub(crate) fn library_grid(app: &LightcraftApp) -> bool {
+pub(crate) fn library_grid(app: &LightkubApp) -> bool {
     matches!(app.ui.view, crate::state::ViewMode::PhotoGrid | crate::state::ViewMode::SquareGrid)
 }
 
@@ -502,7 +502,7 @@ mod tests {
         for id in 1..=4 {
             let photo = Photo::new(
                 PhotoId(id),
-                Source::File { path: format!("/lightcraft-shortcuts/{id}.jpg") },
+                Source::File { path: format!("/lightkub-shortcuts/{id}.jpg") },
                 &format!("{id}.jpg"),
                 "JPEG",
                 100,
@@ -513,7 +513,7 @@ mod tests {
         }
         session.execute("library.sort", &json!({"key": "fileName", "ascending": true})).unwrap();
         session.execute("library.select", &json!({"ids": [1]})).unwrap();
-        let app = LightcraftApp::new(session, crate::Services { png: None, ..Default::default() });
+        let app = LightkubApp::new(session, crate::Services { png: None, ..Default::default() });
         let mut h = crate::headless::Headless::new(app, [1200.0, 800.0], 1.0);
         h.app.ui.view = crate::state::ViewMode::PhotoGrid;
         for _ in 0..3 {

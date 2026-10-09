@@ -544,7 +544,7 @@ struct Host {
 
 pub(crate) fn profiling() -> bool {
     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    *ON.get_or_init(|| std::env::var_os("LIGHTCRAFT_PROFILE").is_some())
+    *ON.get_or_init(|| std::env::var_os("LIGHTKUB_PROFILE").is_some())
 }
 
 /// Render on `gpu`, reusing `stages` (if given). `None` (or a result the caller discards) when the
@@ -559,7 +559,7 @@ pub fn render(
     fault: Option<crate::Fault>,
 ) -> Option<Rendered> {
     let mut t = profiling().then(std::time::Instant::now);
-    // Each stage is submitted on its own; under `LIGHTCRAFT_PROFILE` also waited for, so the
+    // Each stage is submitted on its own; under `LIGHTKUB_PROFILE` also waited for, so the
     // timings are real.
     let lap = |what: &str, t: &mut Option<std::time::Instant>, cx: &mut Cx<'_>| match t {
         Some(t) => {

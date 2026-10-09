@@ -1,7 +1,7 @@
-# LightCraft — the desktop app (`lightcraft`) and the CLI/MCP server (`lightcraft-cli`), built from
+# LightKub — the desktop app (`lightkub`) and the CLI/MCP server (`lightkub-cli`), built from
 # this repository:
 #
-#   nix build          # → ./result/bin/lightcraft, ./result/bin/lightcraft-cli
+#   nix build          # → ./result/bin/lightkub, ./result/bin/lightkub-cli
 #
 # Kept in step with the release workflow (.github/workflows/release.yml) and packaging/env.sh:
 #   * `Cargo.lock` drives the dependencies (`cargoLock`), so there is no vendorHash to bump — only
@@ -9,9 +9,9 @@
 #   * `CRAFT_FONTS_DIR` embeds the CJK fonts from storytold/craft-fonts (the `craft-fonts`
 #     flake input); without it everything builds and runs, but Japanese and Chinese text have no glyphs;
 #   * the desktop file, hicolor icons and AppStream metadata are the same files the .deb/.rpm ship
-#     (packaging/linux/), so `apt` and NixOS users see one identical LightCraft;
+#     (packaging/linux/), so `apt` and NixOS users see one identical LightKub;
 #   * `doCheck` runs `cargo test --workspace`, what `cargo xtask ci` runs. `nix build` runs it too;
-#     `pkgs.lightcraft.overrideAttrs { doCheck = false; }` skips it for a faster, build-only install.
+#     `pkgs.lightkub.overrideAttrs { doCheck = false; }` skips it for a faster, build-only install.
 #
 # Everything in the product is pure Rust (no C/C++ dependencies), so this needs no build system
 # beyond cargo plus the windowing headers winit's build scripts look for.
@@ -53,7 +53,7 @@ let
   isLinux = stdenv.hostPlatform.isLinux;
 
   # AppStream id: also the desktop file name, and the icon name in share/icons/hicolor.
-  appId = "ai.storyteller.lightcraft";
+  appId = "io.github.teh_natsu.lightkub";
 
   # Libraries the binaries open at run time with dlopen(): nothing links them, so no RPATH points at
   # them — winit loads libxkbcommon/libxcb, wgpu the Vulkan loader (NixOS patches that loader to
@@ -69,15 +69,15 @@ let
     vulkan-loader
   ];
 
-  # The two native binaries. The wasm app (apps/lightcraft-web) is built by `cargo xtask web`, not
+  # The two native binaries. The wasm app (apps/lightkub-web) is built by `cargo xtask web`, not
   # here; xtask is tooling.
   binaries = [
-    "lightcraft"
-    "lightcraft-cli"
+    "lightkub"
+    "lightkub-cli"
   ];
 in
 rustPlatform.buildRustPackage {
-  pname = "lightcraft";
+  pname = "lightkub";
   inherit version;
 
   src = lib.cleanSourceWith {
@@ -98,9 +98,9 @@ rustPlatform.buildRustPackage {
   cargoBuildFlags = [
     "--locked"
     "-p"
-    "lightcraft"
+    "lightkub"
     "-p"
-    "lightcraft-cli"
+    "lightkub-cli"
   ];
 
   # `cargo xtask ci` runs `cargo test --workspace`. Tests that need what the sandbox cannot have
@@ -159,7 +159,7 @@ rustPlatform.buildRustPackage {
       --subst-var-by DATE ${buildDate}
 
     # Licences for everything embedded in the binaries: Inter, the app icon, each craft font.
-    doc=$out/share/doc/lightcraft
+    doc=$out/share/doc/lightkub
     install -Dm644 -t "$doc" \
       README.md LICENSE-MIT LICENSE-APACHE NOTICE \
       assets/ATTRIBUTION.md assets/fonts/OFL-Inter.txt
@@ -188,12 +188,12 @@ rustPlatform.buildRustPackage {
   meta = {
     description = "Photo library and non-destructive raw developer";
     longDescription = ''
-      LightCraft organises a photo library and develops raw files non-destructively: masks,
+      LightKub organises a photo library and develops raw files non-destructively: masks,
       presets, colour grading, local adjustments and batch export, driven by the same command
-      layer as its UI. It ships with lightcraft-cli, a headless renderer, command runner and MCP
+      layer as its UI. It ships with lightkub-cli, a headless renderer, command runner and MCP
       server for AI agents.
     '';
-    homepage = "https://getartcraft.com/apps/lightcraft";
+    homepage = "https://github.com/teh-natsu/lightkub";
     license = with lib.licenses; [
       mit
       asl20
@@ -201,6 +201,6 @@ rustPlatform.buildRustPackage {
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     # `nix run` and the desktop entry both start the GUI.
-    mainProgram = "lightcraft";
+    mainProgram = "lightkub";
   };
 }

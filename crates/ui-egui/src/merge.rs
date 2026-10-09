@@ -16,7 +16,7 @@ use lightcraft_engine::merge::{MergeJob, MergeOutput};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 
 /// The dialog's options (also the parameters of the `merge.*` commands).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -116,7 +116,7 @@ impl MergeState {
     }
 }
 
-fn spawn(app: &LightcraftApp, options: &MergeDialog, ids: &[PhotoId], preview: bool) -> Result<MergeTask, String> {
+fn spawn(app: &LightkubApp, options: &MergeDialog, ids: &[PhotoId], preview: bool) -> Result<MergeTask, String> {
     let (kind, finish) = lightcraft_engine::merge::parse(&options.command, &options.params()).map_err(|e| e.to_string())?;
     let job = app.session.plan_merge(kind, finish, ids, preview).map_err(|e| e.to_string())?;
     let progress = Arc::new(Mutex::new((0.0, "Starting".to_string())));
@@ -144,7 +144,7 @@ fn spawn(app: &LightcraftApp, options: &MergeDialog, ids: &[PhotoId], preview: b
 }
 
 /// Open the merge dialog for the selection.
-pub fn open(app: &mut LightcraftApp, command: &str) -> Result<Value, String> {
+pub fn open(app: &mut LightkubApp, command: &str) -> Result<Value, String> {
     let ids = app.session.targets(&json!({}));
     if ids.len() < 2 {
         return Err("select at least 2 photos to merge".into());
@@ -161,7 +161,7 @@ pub fn open(app: &mut LightcraftApp, command: &str) -> Result<Value, String> {
 }
 
 /// Start the full-resolution merge (the dialog's Merge button / `ui.dialog.confirm`).
-pub fn start_final(app: &mut LightcraftApp, opts: &MergeDialog) -> Result<Value, String> {
+pub fn start_final(app: &mut LightkubApp, opts: &MergeDialog) -> Result<Value, String> {
     if app.merge.final_task.is_some() {
         return Err("a merge is already running".into());
     }
@@ -177,7 +177,7 @@ pub fn start_final(app: &mut LightcraftApp, opts: &MergeDialog) -> Result<Value,
 
 /// Merge the selection without the dialog, with the options last used for `command` (the
 /// defaults the first time).
-pub fn start_last(app: &mut LightcraftApp, command: &str) -> Result<Value, String> {
+pub fn start_last(app: &mut LightkubApp, command: &str) -> Result<Value, String> {
     let ids = app.session.targets(&json!({}));
     if ids.len() < 2 {
         return Err("select at least 2 photos to merge".into());
@@ -188,7 +188,7 @@ pub fn start_last(app: &mut LightcraftApp, command: &str) -> Result<Value, Strin
 }
 
 /// Per frame: keep the preview in sync with the dialog's options, collect finished jobs.
-pub fn poll(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn poll(app: &mut LightkubApp, ctx: &egui::Context) {
     // preview for the open dialog
     let dialog_opts = match &app.ui.dialog {
         Some(crate::state::Dialog::Merge { opts }) => Some(opts.clone()),
@@ -275,12 +275,12 @@ pub fn poll(app: &mut LightcraftApp, ctx: &egui::Context) {
     }
 }
 
-fn last_failed_matches(app: &LightcraftApp, opts: &MergeDialog) -> bool {
+fn last_failed_matches(app: &LightkubApp, opts: &MergeDialog) -> bool {
     app.merge.failed_options.as_ref() == Some(opts)
 }
 
 /// The dialog body (options on the left, preview on the right).
-pub fn body(app: &mut LightcraftApp, ui: &mut egui::Ui, opts: &mut MergeDialog) {
+pub fn body(app: &mut LightkubApp, ui: &mut egui::Ui, opts: &mut MergeDialog) {
     let t = crate::theme::Tokens::get(ui.ctx());
     ui.horizontal_top(|ui| {
         // preview

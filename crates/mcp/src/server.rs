@@ -19,7 +19,7 @@ const INVALID_PARAMS: i64 = -32602;
 const INTERNAL_ERROR: i64 = -32603;
 const RESOURCE_NOT_FOUND: i64 = -32002;
 
-const INSTRUCTIONS: &str = "LightCraft is a non-destructive photo library and raw developer (a Lightroom alternative). \
+const INSTRUCTIONS: &str = "LightKub is a non-destructive photo library and raw developer (a Lightroom alternative). \
 Photos have integer ids; most editing acts on the *active* photo (tools that take `id` make that photo active first). \
 Typical loop: query_photos → select_photos (or pass id) → list_controls → set_develop {values: {\"light.exposure\": 0.5}} → \
 render_photo to look at the result → export. Positions (crop rects, mask points, brush strokes) are normalized image \
@@ -27,11 +27,11 @@ coordinates 0..1 with the origin at the top-left. Every action is a command: lis
 docs; run_command runs any of them. Edits are undoable (undo / redo).";
 
 /// Resource URIs.
-pub const LIBRARY_URI: &str = "lightcraft://library";
-pub const PHOTOS_URI: &str = "lightcraft://photos";
-pub const PHOTO_URI: &str = "lightcraft://photo/active";
-pub const DEVELOP_URI: &str = "lightcraft://develop/active";
-pub const CONTROLS_URI: &str = "lightcraft://controls";
+pub const LIBRARY_URI: &str = "lightkub://library";
+pub const PHOTOS_URI: &str = "lightkub://photos";
+pub const PHOTO_URI: &str = "lightkub://photo/active";
+pub const DEVELOP_URI: &str = "lightkub://develop/active";
+pub const CONTROLS_URI: &str = "lightkub://controls";
 
 /// An MCP server bound to one backend.
 pub struct Server {
@@ -153,7 +153,7 @@ impl Server {
                 Ok(json!({
                     "protocolVersion": version,
                     "capabilities": {"tools": {"listChanged": false}, "resources": {"subscribe": false, "listChanged": false}},
-                    "serverInfo": {"name": "lightcraft", "title": "LightCraft", "version": env!("CARGO_PKG_VERSION")},
+                    "serverInfo": {"name": "lightkub", "title": "LightKub", "version": env!("CARGO_PKG_VERSION")},
                     "instructions": format!("{INSTRUCTIONS} Backend: {}.", self.backend.describe()),
                 }))
             }

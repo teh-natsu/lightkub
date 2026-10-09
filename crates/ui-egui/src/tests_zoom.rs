@@ -5,7 +5,7 @@ use std::time::Duration;
 use serde_json::json;
 
 use crate::headless::Headless;
-use crate::{LightcraftApp, Services};
+use crate::{LightkubApp, Services};
 
 const T: Duration = Duration::from_secs(20);
 const SETTLE: Duration = Duration::from_secs(120);
@@ -13,7 +13,7 @@ const SETTLE: Duration = Duration::from_secs(120);
 /// The demo library in a 1400×900 window at 1 px per point, the first photo open in Detail.
 fn detail() -> Headless {
     let services = Services { png: None, ..Default::default() };
-    let app = LightcraftApp::new(lightcraft_engine::Session::with_demo(), services);
+    let app = LightkubApp::new(lightcraft_engine::Session::with_demo(), services);
     let mut h = Headless::new(app, [1400.0, 900.0], 1.0);
     let r = h.request("ui.set", json!({"view": "detail", "right": "none", "filmstrip": false}), T);
     assert_eq!(r["ok"], true, "{r}");

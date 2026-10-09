@@ -45,7 +45,7 @@ fn meta_of(m: &lightcraft_meta::Metadata) -> (Meta, Option<String>) {
 
 /// Lens corrections embedded in a raw's `OpcodeList3` (`WarpRectilinear`, `FixVignetteRadial`: a DNG's own, or the
 /// raw reader's equivalent of the camera's correction, e.g. Panasonic / Leica RW2 distortion), re-expressed for the
-/// default-cropped, EXIF-oriented image. These are the only "profile" corrections LightCraft applies.
+/// default-cropped, EXIF-oriented image. These are the only "profile" corrections LightKub applies.
 pub fn embedded_lens(raw: &lightcraft_raw::RawInfo) -> Option<lightcraft_develop::EmbeddedLens> {
     use lightcraft_develop::{EmbeddedLens, EmbeddedVignette, EmbeddedWarp};
     use lightcraft_geom::Point;
@@ -679,7 +679,7 @@ mod tests {
     /// lenses is far off. A file shot with the camera's correction off (DMC-GH1) carries no correction.
     #[test]
     fn corpus_rw2_distortion_matches_the_camera_jpeg() {
-        let dir = std::env::var_os("LIGHTCRAFT_CORPUS")
+        let dir = std::env::var_os("LIGHTKUB_CORPUS")
             .map(std::path::PathBuf::from)
             .unwrap_or_else(|| std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../corpus"))
             .join("raw");

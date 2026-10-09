@@ -7,13 +7,13 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>LightCraft</string>
+  <string>LightKub</string>
   <key>CFBundleName</key>
-  <string>LightCraft</string>
+  <string>LightKub</string>
   <key>CFBundleExecutable</key>
-  <string>LightCraft</string>
+  <string>LightKub</string>
   <key>CFBundleIdentifier</key>
-  <string>ai.storyteller.lightcraft</string>
+  <string>io.github.teh_natsu.lightkub</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>
@@ -24,12 +24,12 @@
   <string>@SHORT_VERSION@</string>
   <key>CFBundleVersion</key>
   <string>@SHORT_VERSION@</string>
-  <key>LightCraftVersion</key>
+  <key>LightKubVersion</key>
   <string>@VERSION@</string>
-  <key>LightCraftBuildCommit</key>
+  <key>LightKubBuildCommit</key>
   <string>@BUILD_SHA@</string>
   <key>CFBundleIconFile</key>
-  <string>LightCraft</string>
+  <string>LightKub</string>
   <key>LSApplicationCategoryType</key>
   <string>public.app-category.graphics-design</string>
   <!-- Must match MACOSX_DEPLOYMENT_TARGET in package.sh. Big Sur is the first release on
@@ -43,29 +43,29 @@
   <key>NSRequiresAquaSystemAppearance</key>
   <false/>
   <key>NSHumanReadableCopyright</key>
-  <string>Copyright © the LightCraft authors. MIT OR Apache-2.0.</string>
+  <string>Copyright © the LightKub authors. MIT OR Apache-2.0.</string>
 
-  <!-- Lightcraft's own format. -->
+  <!-- Lightkub's own format. -->
   <key>UTExportedTypeDeclarations</key>
   <array>
     <dict>
       <key>UTTypeIdentifier</key>
-      <string>ai.storyteller.lightcraft.document</string>
+      <string>io.github.teh_natsu.lightkub.document</string>
       <key>UTTypeDescription</key>
-      <string>LightCraft Document</string>
+      <string>LightKub Document</string>
       <key>UTTypeConformsTo</key>
       <array>
         <string>public.data</string>
         <string>public.image</string>
       </array>
       <key>UTTypeIconFile</key>
-      <string>LightCraft</string>
+      <string>LightKub</string>
       <key>UTTypeTagSpecification</key>
       <dict>
         <key>public.filename-extension</key>
         <array><string>pcraft</string></array>
         <key>public.mime-type</key>
-        <array><string>application/x-lightcraft</string></array>
+        <array><string>application/x-lightkub</string></array>
       </dict>
     </dict>
   </array>
@@ -90,7 +90,7 @@
     </dict>
     <dict>
       <key>UTTypeIdentifier</key>
-      <string>ai.storyteller.lightcraft.qoi</string>
+      <string>io.github.teh_natsu.lightkub.qoi</string>
       <key>UTTypeDescription</key>
       <string>QOI Image</string>
       <key>UTTypeConformsTo</key>

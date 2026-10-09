@@ -7,7 +7,7 @@ use egui::{Align2, Color32, Rect, Sense, Stroke, StrokeKind, pos2, vec2};
 use lightcraft_catalog::{Catalog, ColorLabel, DateRun, Flag, GroupBy, PhotoId, SortKey, StackId};
 use serde_json::json;
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::icons::{Icon, paint};
 use crate::render::Slot;
 use crate::state::ViewMode;
@@ -44,7 +44,7 @@ pub struct GridStats {
     pub last_show: web_time::Duration,
 }
 
-pub fn show(app: &mut LightcraftApp, ui: &mut egui::Ui) {
+pub fn show(app: &mut LightkubApp, ui: &mut egui::Ui) {
     let t0 = web_time::Instant::now();
     show_inner(app, ui);
     app.caches.grid_stats.frames += 1;
@@ -133,7 +133,7 @@ pub fn rows_between(rows: &[GridRow], top: f32, bottom: f32) -> &[GridRow] {
     rest.get(..n).unwrap_or(&[])
 }
 
-fn show_inner(app: &mut LightcraftApp, ui: &mut egui::Ui) {
+fn show_inner(app: &mut LightkubApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     let (generation, ids) = app.session.visible_shared();
     // header: source title + count
@@ -408,7 +408,7 @@ pub fn layout(aspects: &[f32], groups: &[(usize, usize)], avail_w: f32, target: 
 
 /// A date header: "Wednesday, 30 September 2026 · 12 photos". Clicking it selects the group
 /// (Cmd/Shift: adds to the selection).
-fn group_header(app: &mut LightcraftApp, ui: &mut egui::Ui, run: &DateRun, ids: &[PhotoId], r: Rect, pinned: bool) {
+fn group_header(app: &mut LightkubApp, ui: &mut egui::Ui, run: &DateRun, ids: &[PhotoId], r: Rect, pinned: bool) {
     let t = Tokens::get(ui.ctx());
     let resp = ui.interact(r, egui::Id::new(("group-header", run.start, pinned)), Sense::click());
     if !pinned {
@@ -442,7 +442,7 @@ fn group_header(app: &mut LightcraftApp, ui: &mut egui::Ui, run: &DateRun, ids: 
 /// Request a grid/filmstrip thumbnail at `priority`. An unedited raw without a thumbnail texture
 /// first gets a stand-in (its cached thumbnail, else its embedded camera preview), and its real
 /// render then follows in the background.
-pub fn request_thumb(app: &mut LightcraftApp, id: PhotoId, size: usize, priority: u32) {
+pub fn request_thumb(app: &mut LightkubApp, id: PhotoId, size: usize, priority: u32) {
     let bucket = lightcraft_engine::media::thumb_bucket(size);
     if let Some(photo) = app.session.catalog.photo(id)
         && app.renderer.thumb_current(photo, bucket, priority)
@@ -472,7 +472,7 @@ pub fn request_thumb(app: &mut LightcraftApp, id: PhotoId, size: usize, priority
 /// Rendered thumbnails replacing embedded previews: after everything on screen.
 pub const BACKGROUND_THUMB_PRIORITY: u32 = 3;
 
-fn cell(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId, r: Rect, square: bool, onscreen: bool, ppp: f32) {
+fn cell(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId, r: Rect, square: bool, onscreen: bool, ppp: f32) {
     let t = Tokens::get(ui.ctx());
     let Some(photo) = app.session.catalog.photo(id).cloned() else { return };
     let resp = ui.interact(r, egui::Id::new(("cell", id.0)), Sense::click_and_drag());
@@ -665,7 +665,7 @@ fn cell(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId, r: Rect, square
 
 /// The header of a Local folder view: the path as a breadcrumb (each part opens that folder),
 /// Include subfolders, Add to My Photos.
-fn folder_header(app: &mut LightcraftApp, ui: &mut egui::Ui, hr: Rect, b: &lightcraft_engine::Browse, ids: &[PhotoId], local_n: usize, cnt: &str) {
+fn folder_header(app: &mut LightkubApp, ui: &mut egui::Ui, hr: Rect, b: &lightcraft_engine::Browse, ids: &[PhotoId], local_n: usize, cnt: &str) {
     let t = Tokens::get(ui.ctx());
     let mut child =
         ui.new_child(egui::UiBuilder::new().max_rect(hr.shrink2(vec2(16.0, 6.0))).layout(egui::Layout::left_to_right(egui::Align::Center)));
@@ -718,7 +718,7 @@ fn folder_header(app: &mut LightcraftApp, ui: &mut egui::Ui, hr: Rect, b: &light
 
 /// While photos are dragged: a badge at the pointer; the drag ends when the button is up
 /// (drop targets act on the release frame, before this runs).
-pub fn drag_feedback(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn drag_feedback(app: &mut LightkubApp, ctx: &egui::Context) {
     let Some(ids) = &app.ui.dragging_photos else { return };
     let (released, down, pos) = ctx.input(|i| (i.pointer.any_released(), i.pointer.any_down(), i.pointer.latest_pos()));
     if released || !down {
@@ -743,7 +743,7 @@ pub fn drag_feedback(app: &mut LightcraftApp, ctx: &egui::Context) {
 pub use super::filterbar::label_color;
 
 /// "Set Color Label" items (coloured dot + the label's name), shared by context menus.
-pub fn label_menu(app: &mut LightcraftApp, ui: &mut egui::Ui) {
+pub fn label_menu(app: &mut LightkubApp, ui: &mut egui::Ui) {
     let current = app.session.active().and_then(|id| app.session.catalog.photo(id)).and_then(|p| p.label);
     for l in ColorLabel::ALL {
         let name = crate::i18n::color_label(&app.session.catalog, l);
@@ -768,7 +768,7 @@ pub fn label_menu(app: &mut LightcraftApp, ui: &mut egui::Ui) {
 
 /// Stack badge at the cell's top-left: the photo count on a collapsed stack's top, `i/n` on the
 /// members of an expanded stack. Clicking it expands/collapses the stack.
-pub fn stack_badge(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId, sid: lightcraft_catalog::StackId, pos: usize, r: Rect, square: bool) {
+pub fn stack_badge(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId, sid: lightcraft_catalog::StackId, pos: usize, r: Rect, square: bool) {
     let t = Tokens::get(ui.ctx());
     let Some(st) = app.session.catalog.stack(sid) else { return };
     let n = st.photos.len();
@@ -796,7 +796,7 @@ pub fn stack_badge(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId, sid:
     }
 }
 
-pub fn context_menu(app: &mut LightcraftApp, ui: &mut egui::Ui, id: PhotoId) {
+pub fn context_menu(app: &mut LightkubApp, ui: &mut egui::Ui, id: PhotoId) {
     if !app.session.selection.contains(id) {
         let _ = app.run("library.select", json!({"ids": [id.0]}));
     }

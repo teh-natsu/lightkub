@@ -7,14 +7,14 @@ use serde_json::json;
 
 use crate::headless::Headless;
 use crate::state::{LEFT_WIDTH, MIN_PHOTO_WIDTH, RIGHT_WIDTH};
-use crate::{LightcraftApp, Services};
+use crate::{LightkubApp, Services};
 
 const T: Duration = Duration::from_secs(20);
 const SETTLE: Duration = Duration::from_secs(120);
 
 fn demo(size: [f32; 2], ui: serde_json::Value) -> Headless {
     let services = Services { png: None, ..Default::default() };
-    let app = LightcraftApp::new(lightcraft_engine::Session::with_demo(), services);
+    let app = LightkubApp::new(lightcraft_engine::Session::with_demo(), services);
     let mut h = Headless::new(app, size, 1.0);
     let r = h.request("ui.set", ui, T);
     assert_eq!(r["ok"], true, "{r}");
@@ -719,7 +719,7 @@ fn folders_app_sized(paths: &[&str], size: [f32; 2]) -> Headless {
         let p = Photo::new(id, Source::File { path: (*path).into() }, "x.jpg", "JPEG", 60, 40, "2026-01-01T10:00:00");
         session.catalog.apply(Op::AddPhoto { photo: Box::new(p) }).unwrap();
     }
-    let app = LightcraftApp::new(session, Services { png: None, ..Default::default() });
+    let app = LightkubApp::new(session, Services { png: None, ..Default::default() });
     let mut h = Headless::new(app, size, 1.0);
     let r = h.request("ui.set", json!({"view": "photoGrid", "leftPanel": true}), T);
     assert_eq!(r["ok"], true, "{r}");

@@ -6,9 +6,9 @@ use lightcraft_denoise::manifest::{DenoiserManifest, Domain, Gain};
 use lightcraft_engine::Session;
 use serde_json::json;
 
-use crate::{LightcraftApp, Services, model_setup, state::Dialog};
+use crate::{LightkubApp, Services, model_setup, state::Dialog};
 
-fn setup(name: &str) -> (LightcraftApp, PathBuf, PhotoId) {
+fn setup(name: &str) -> (LightkubApp, PathBuf, PhotoId) {
     let dir = std::env::temp_dir().join(format!("lc-model-flow-{name}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     let mut s = Session::new().with_fs();
@@ -27,7 +27,7 @@ fn setup(name: &str) -> (LightcraftApp, PathBuf, PhotoId) {
     );
     raw.kind = MediaKind::Raw;
     s.commit("fixture", Op::AddPhoto { photo: Box::new(raw) }).unwrap();
-    (LightcraftApp::new(s, Services::default()), dir, id)
+    (LightkubApp::new(s, Services::default()), dir, id)
 }
 
 fn denoise_file(dir: &Path) -> PathBuf {
@@ -53,7 +53,7 @@ fn denoise_file(dir: &Path) -> PathBuf {
     source.join("model.onnx")
 }
 
-fn install_denoise(app: &mut LightcraftApp, dir: &Path) {
+fn install_denoise(app: &mut LightkubApp, dir: &Path) {
     app.run("denoise.models.install", json!({"path": denoise_file(dir), "acknowledged": true})).unwrap();
 }
 
@@ -84,10 +84,10 @@ fn accepting_a_local_model_installs_in_background_and_resumes_the_pending_action
     let _ = std::fs::remove_dir_all(dir);
 }
 
-fn amount(app: &LightcraftApp, id: PhotoId) -> f64 {
+fn amount(app: &LightkubApp, id: PhotoId) -> f64 {
     app.session.develop_of(id).unwrap().enhance.denoise
 }
-fn resume(app: &mut LightcraftApp) {
+fn resume(app: &mut LightkubApp) {
     model_setup::pump(app, &egui::Context::default());
 }
 

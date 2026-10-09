@@ -1,6 +1,10 @@
 # Contributors in the About window
 
-**About ▸ Contributors** credits everyone who contributed to LightCraft, and **About ▸ Models** credits
+> [!NOTE]
+> LightKub's About window shows neither tab: it lists the app, its fonts and the "based on LightCraft" credit.
+> The credits code and data below stay so that merges from upstream stay small.
+
+**About ▸ Contributors** credits everyone who contributed to LightKub, and **About ▸ Models** credits
 the AI models named in `Co-Authored-By` trailers. This follows the shared craftrules standard
 [`standards/contributors.md`](https://github.com/storytold/craftrules/blob/main/standards/contributors.md);
 this page is the local copy of the decision.
@@ -21,9 +25,9 @@ this page is the local copy of the decision.
   first or last commit date. The name toggle cycles **Username → Display name → Real name**; a
   missing name falls back to `@username`. Alphabetical sorting is case-insensitive and ignores the `@`.
 
-## In LightCraft
+## In LightKub
 
-- The About dialog (`crates/ui-egui/src/panels/dialogs.rs`, Help ▸ About LightCraft) has the tabs
+- The About dialog (`crates/ui-egui/src/panels/dialogs.rs`, Help ▸ About LightKub) has the tabs
   **About · Contributors · Models**; the control channel can switch them with
   `ui.clickWidget {"id": "button:aboutTab-contributors"}` (`-about`, `-models`), and the list view
   with `button:creditsGrabBag` / `button:creditsTable`.

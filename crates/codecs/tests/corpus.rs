@@ -1,12 +1,12 @@
 //! Corpus tests over `corpus/images/**`, `corpus/pngsuite/**` and `corpus/raw/**` (git-ignored; fetched
 //! with `cargo xtask corpus --download`). Each test skips cleanly when its directory is absent.
-//! `LIGHTCRAFT_CORPUS` overrides the corpus root.
+//! `LIGHTKUB_CORPUS` overrides the corpus root.
 
 use lightcraft_codecs::*;
 use std::path::{Path, PathBuf};
 
 fn corpus_root() -> PathBuf {
-    std::env::var_os("LIGHTCRAFT_CORPUS").map(PathBuf::from).unwrap_or_else(|| Path::new(env!("CARGO_MANIFEST_DIR")).join("../../corpus"))
+    std::env::var_os("LIGHTKUB_CORPUS").map(PathBuf::from).unwrap_or_else(|| Path::new(env!("CARGO_MANIFEST_DIR")).join("../../corpus"))
 }
 
 fn files(dir: &Path) -> Vec<PathBuf> {

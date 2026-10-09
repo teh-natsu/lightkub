@@ -17,7 +17,7 @@ use lightcraft_catalog::{Op, Photo, PhotoId, Source, Stack, StackId};
 use lightcraft_engine::{Browse, LibrarySource, Session};
 use lightcraft_ui_egui::headless::Headless;
 use lightcraft_ui_egui::state::ViewMode;
-use lightcraft_ui_egui::{LightcraftApp, Services};
+use lightcraft_ui_egui::{LightkubApp, Services};
 
 /// Counts allocations made by the current thread (the UI thread is the one measured).
 struct Counting;
@@ -64,7 +64,7 @@ fn allocs() -> (u64, u64) {
     (ALLOCS.with(Cell::get), BYTES.with(Cell::get))
 }
 
-const ROOT: &str = "/lightcraft-grid-bench/root";
+const ROOT: &str = "/lightkub-grid-bench/root";
 
 fn library(n: usize, local: bool) -> Session {
     let mut s = Session::new();
@@ -109,7 +109,7 @@ fn scenario(n: usize, view: ViewMode, local: bool, frames: usize) {
     let t0 = Instant::now();
     let session = library(n, local);
     let services = Services { png: None, ..Default::default() };
-    let app = LightcraftApp::new(session, services);
+    let app = LightkubApp::new(session, services);
     let mut h = Headless::new(app, [1400.0, 900.0], 1.0);
     h.app.ui.view = view;
     h.app.ui.thumb_size = 160.0;

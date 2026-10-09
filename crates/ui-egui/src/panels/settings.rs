@@ -11,7 +11,7 @@
 use egui::RichText;
 use serde_json::{Value, json};
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::state::{GridBadges, PREVIEW_LIMITS, StartupView};
 use crate::theme::Tokens;
 use crate::widgets::register;
@@ -32,7 +32,7 @@ const CACHE_SIZES: [u32; 5] = [512, 1024, 2048, 4096, 8192];
 const LABEL_W: f32 = 150.0;
 
 /// The dialog body for `tab` (the tab bar switches `tab`).
-pub fn body(app: &mut LightcraftApp, ui: &mut egui::Ui, tab: &mut String) {
+pub fn body(app: &mut LightkubApp, ui: &mut egui::Ui, tab: &mut String) {
     let t = Tokens::get(ui.ctx());
     ui.set_min_width(560.0);
     ui.set_min_height(330.0);
@@ -98,7 +98,7 @@ pub(super) fn choices<V: PartialEq + Copy>(ui: &mut egui::Ui, id: &str, options:
 
 // ------------------------------------------------------------------------------------- General
 
-fn general_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
+fn general_tab(app: &mut LightkubApp, ui: &mut egui::Ui, t: &Tokens) {
     row(ui, t, crate::i18n::tr("Language"), |ui| {
         let languages: Vec<_> = crate::i18n::Locale::ALL.iter().map(|language| (*language, language.name())).collect();
         choices(ui, "settingsLanguage", &languages, &mut app.ui.language);
@@ -153,7 +153,7 @@ fn general_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
 // -------------------------------------------------------------------------------------- Import
 
 /// A preset picker: `None` = `none_label`. Returns the new choice when it changed.
-fn preset_combo(app: &LightcraftApp, ui: &mut egui::Ui, id: &str, current: Option<&str>, none_label: &str) -> Option<Option<String>> {
+fn preset_combo(app: &LightkubApp, ui: &mut egui::Ui, id: &str, current: Option<&str>, none_label: &str) -> Option<Option<String>> {
     let name = |pid: &str| {
         app.session
             .presets
@@ -184,7 +184,7 @@ fn preset_combo(app: &LightcraftApp, ui: &mut egui::Ui, id: &str, current: Optio
 }
 
 /// Cameras of the raws in the library plus those with a stored default, sorted.
-fn cameras(app: &LightcraftApp) -> Vec<String> {
+fn cameras(app: &LightkubApp) -> Vec<String> {
     let mut v: Vec<String> = app
         .session
         .catalog
@@ -198,12 +198,12 @@ fn cameras(app: &LightcraftApp) -> Vec<String> {
     v
 }
 
-fn import_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
+fn import_tab(app: &mut LightkubApp, ui: &mut egui::Ui, t: &Tokens) {
     let d = app.session.import_defaults.clone();
     heading(ui, t, crate::i18n::tr("Raw defaults"));
     hint(ui, t, crate::i18n::tr("Settings new raw photos start from. Changing them doesn't touch photos already in the library."));
     row(ui, t, crate::i18n::tr("Raw photos"), |ui| {
-        if let Some(v) = preset_combo(app, ui, "settingsRawPreset", d.raw_preset.as_deref(), "LightCraft Default") {
+        if let Some(v) = preset_combo(app, ui, "settingsRawPreset", d.raw_preset.as_deref(), "LightKub Default") {
             let _ = app.run("library.preferences", json!({"import": {"rawPreset": v}}));
         }
     });
@@ -222,7 +222,7 @@ fn import_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
             for (i, cam) in cams.iter().enumerate() {
                 let entry = d.cameras.iter().find(|c| c.camera.eq_ignore_ascii_case(cam));
                 row(ui, t, cam, |ui| {
-                    // "Raw default" = no entry; otherwise the entry's preset (None = LightCraft Default)
+                    // "Raw default" = no entry; otherwise the entry's preset (None = LightKub Default)
                     const RAW_DEFAULT: &str = "\u{1}raw";
                     let current = match entry {
                         None => Some(RAW_DEFAULT),
@@ -231,7 +231,7 @@ fn import_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
                     let mut pick = None;
                     let label = match current {
                         Some(RAW_DEFAULT) => crate::i18n::tr("Same as raw default").to_string(),
-                        None => crate::i18n::tr("LightCraft Default").to_string(),
+                        None => crate::i18n::tr("LightKub Default").to_string(),
                         Some(pid) => app
                             .session
                             .presets
@@ -245,7 +245,7 @@ fn import_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
                         if ui.selectable_label(current == Some(RAW_DEFAULT), crate::i18n::tr("Same as raw default")).clicked() {
                             pick = Some(json!({"camera": cam, "remove": true}));
                         }
-                        if ui.selectable_label(current.is_none(), crate::i18n::tr("LightCraft Default")).clicked() {
+                        if ui.selectable_label(current.is_none(), crate::i18n::tr("LightKub Default")).clicked() {
                             pick = Some(json!({"camera": cam, "preset": null}));
                         }
                         for p in &app.session.presets {
@@ -361,13 +361,13 @@ fn import_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
         }
     }
     if app.session.library.is_none() {
-        hint(ui, t, crate::i18n::tr("In-memory session: these settings last until LightCraft quits."));
+        hint(ui, t, crate::i18n::tr("In-memory session: these settings last until LightKub quits."));
     }
 }
 
 // --------------------------------------------------------------------------------- Performance
 
-fn performance_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
+fn performance_tab(app: &mut LightkubApp, ui: &mut egui::Ui, t: &Tokens) {
     use lightcraft_engine::gpu;
     heading(ui, t, crate::i18n::tr("Rendering"));
     check(ui, "settings.gpu", &mut app.ui.settings.gpu, "Use the GPU for rendering");
@@ -438,7 +438,7 @@ fn performance_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
 /// Where this library keeps its smart previews (the offline-editing proxies, which can be large):
 /// the effective folder, what is in it, and choosing another one.
 #[cfg(not(target_arch = "wasm32"))]
-fn smart_previews(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
+fn smart_previews(app: &mut LightkubApp, ui: &mut egui::Ui, t: &Tokens) {
     // listing a big folder every frame would be slow: refresh every 2 s and after a change
     let cache = egui::Id::new("smart-location");
     let now = ui.input(|i| i.time);
@@ -532,7 +532,7 @@ fn smart_previews(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
 
 // ---------------------------------------------------------------------------------- Interface
 
-fn interface_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
+fn interface_tab(app: &mut LightkubApp, ui: &mut egui::Ui, t: &Tokens) {
     heading(ui, t, crate::i18n::tr("Filmstrip"));
     check(ui, "settings.filmNames", &mut app.ui.settings.film_names, "Show file names");
     check(ui, "settings.filmBadges", &mut app.ui.settings.film_badges, "Show ratings, flags and edit badges");
@@ -558,7 +558,7 @@ fn interface_tab(app: &mut LightcraftApp, ui: &mut egui::Ui, t: &Tokens) {
 
 /// `app.openLibrary {path?}`: close the current library and open (or create) the one at `path`,
 /// or a folder chosen in a dialog. Remembered as the library to open at launch.
-pub fn open_library(app: &mut LightcraftApp, p: &Value) -> Result<Value, String> {
+pub fn open_library(app: &mut LightkubApp, p: &Value) -> Result<Value, String> {
     if crate::lightroom_import::is_running(app) {
         return Err("wait for Lightroom catalog import to finish before switching libraries".into());
     }

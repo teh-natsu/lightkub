@@ -15,7 +15,7 @@ An active slider gesture finishes before the pending action resumes.
 ## Models and terms
 
 **No model weights are bundled.** Models live in the per-user `denoise-models` folder
-(override with `LIGHTCRAFT_DENOISE_MODELS`). Settings provides **Install from file…**
+(override with `LIGHTKUB_DENOISE_MODELS`). Settings provides **Install from file…**
 for a user-supplied ONNX file with a `denoise-model.json` beside it. The default build
 offers no model downloads. The separate `rawnind-model` Cargo feature enables the
 pinned RawNIND offer only when a release's model policy permits it.

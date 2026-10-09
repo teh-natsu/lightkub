@@ -7,14 +7,14 @@ use serde_json::json;
 
 use crate::headless::Headless;
 use crate::state::RightPanel;
-use crate::{LightcraftApp, Services};
+use crate::{LightkubApp, Services};
 
 const T: Duration = Duration::from_secs(20);
 const SETTLE: Duration = Duration::from_secs(120);
 
 fn detail(panel: &str) -> Headless {
     let services = Services { png: None, ..Default::default() };
-    let app = LightcraftApp::new(lightcraft_engine::Session::with_demo(), services);
+    let app = LightkubApp::new(lightcraft_engine::Session::with_demo(), services);
     let mut h = Headless::new(app, [1200.0, 800.0], 1.0);
     let r = h.request("ui.set", json!({"view": "detail"}), T);
     assert_eq!(r["ok"], true, "{r}");
@@ -448,7 +448,7 @@ fn edit_in_external_editor_opens_the_copy() {
         })),
         ..Default::default()
     };
-    let app = LightcraftApp::new(lightcraft_engine::Session::with_demo().with_fs(), services);
+    let app = LightkubApp::new(lightcraft_engine::Session::with_demo().with_fs(), services);
     let mut h = Headless::new(app, [1200.0, 800.0], 1.0);
     h.app.ui.settings.external_editor = "PhotoCraft".into();
     let r = h.request("engine.execute", json!({"command": "photo.editInExternal", "params": {"dir": dir.to_string_lossy()}}), T);
@@ -501,7 +501,7 @@ fn grid_frame_100k() {
         })
         .collect();
     session.commit("Add", Op::Batch { ops }).unwrap();
-    let app = LightcraftApp::new(session, Services { png: None, ..Default::default() });
+    let app = LightkubApp::new(session, Services { png: None, ..Default::default() });
     let mut h = Headless::new(app, [1600.0, 1000.0], 1.0);
     h.app.ui.view = crate::state::ViewMode::PhotoGrid;
     h.app.ui.left_panel = true;
@@ -667,7 +667,7 @@ fn ai_masks_without_the_model_offer_the_download() {
         assert_eq!(r["ok"], false, "{r}");
         let r = h.request("ui.dialog.confirm", json!({}), T);
         assert_eq!(r["ok"], false, "{r}");
-        assert!(r["error"].as_str().unwrap_or_default().contains("LIGHTCRAFT_SAM3_MIRRORS"), "{r}");
+        assert!(r["error"].as_str().unwrap_or_default().contains("LIGHTKUB_SAM3_MIRRORS"), "{r}");
         assert!(matches!(h.app.ui.dialog, Some(Dialog::SamModel { .. })), "stays open");
     } else {
         // with a mirror: Download starts it in the background (here it fails: nothing listens)

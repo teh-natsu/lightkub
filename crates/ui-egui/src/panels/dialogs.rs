@@ -3,7 +3,7 @@
 use lightcraft_develop::{ControlSpec, Section, SettingsGroup, Track};
 use serde_json::json;
 
-use crate::LightcraftApp;
+use crate::LightkubApp;
 use crate::state::Dialog;
 use crate::theme::Tokens;
 
@@ -15,7 +15,7 @@ const RENAME_PREVIEW_ROWS: usize = 6;
 /// rows are planned on a worker thread, and only when the template, start number, photos or
 /// catalog change — never once per frame.
 pub(crate) fn rename_preview(
-    app: &mut LightcraftApp,
+    app: &mut LightkubApp,
     ctx: &egui::Context,
     template: &str,
     start: usize,
@@ -54,13 +54,10 @@ pub(crate) fn rename_preview(
     (read(&rows), total)
 }
 
-/// About dialog tabs: (widget id suffix, label). The credits come from `crate::credits`.
-pub const ABOUT_TABS: &[(&str, &str)] = &[("about", "About"), ("contributors", "Contributors"), ("models", "Models")];
-
 /// Help ▸ What's New (docs/whats-new.md).
 pub const WHATS_NEW: &str = include_str!("../../../../docs/whats-new.md");
 
-pub fn show(app: &mut LightcraftApp, ctx: &egui::Context) {
+pub fn show(app: &mut LightkubApp, ctx: &egui::Context) {
     let Some(mut dlg) = app.ui.dialog.clone() else { return };
     let at_start = dlg.clone();
     let t = Tokens::get(ctx);
@@ -106,7 +103,7 @@ pub fn show(app: &mut LightcraftApp, ctx: &egui::Context) {
         // (nothing to download from in this build: the dialog explains the manual install)
         Dialog::SamModel { .. } if sam_by_hand(&app.session.segmenter) => "Install the SAM 3 Model",
         Dialog::SamModel { .. } => "Download the SAM 3 Model?",
-        Dialog::About => "About LightCraft",
+        Dialog::About => "About LightKub",
         Dialog::Shortcuts => "Keyboard Shortcuts",
     }
     .to_string();
@@ -115,7 +112,7 @@ pub fn show(app: &mut LightcraftApp, ctx: &egui::Context) {
     // own so the size it is given doesn't carry over to the other dialogs. Its content scrolls
     // rather than growing the window when the options below the grid get taller (e.g. Copy).
     let import = matches!(dlg, Dialog::Import { .. });
-    let window_id = egui::Id::new(if import { "lightcraft-import-dialog" } else { "lightcraft-dialog" });
+    let window_id = egui::Id::new(if import { "lightkub-import-dialog" } else { "lightkub-dialog" });
     let shown = egui::Window::new(crate::i18n::tr(&title)).id(window_id)
         .collapsible(false)
         .resizable(import)
@@ -744,54 +741,21 @@ pub fn show(app: &mut LightcraftApp, ctx: &egui::Context) {
                     );
                 }
                 Dialog::About => {
-                    ui.set_min_width(680.0);
-                    let tab_id = egui::Id::new("about_tab");
-                    let mut tab = ui.data_mut(|d| d.get_temp::<u8>(tab_id)).unwrap_or(0);
-                    ui.horizontal(|ui| {
-                        ui.spacing_mut().item_spacing.x = 4.0;
-                        for (i, (id, label)) in ABOUT_TABS.iter().enumerate() {
-                            if crate::widgets::text_button(ui, &format!("aboutTab-{id}"), label, usize::from(tab) == i).clicked() {
-                                tab = u8::try_from(i).unwrap_or(0);
-                            }
-                        }
-                    });
-                    ui.data_mut(|d| d.insert_temp(tab_id, tab));
-                    ui.separator();
-                    match tab {
-                        1 => crate::credits::contributors_ui(app, ui),
-                        2 => crate::credits::models_ui(ui),
-                        _ => {
-                            ui.label(egui::RichText::new("LightCraft").font(t.semibold(20.0)).color(t.text));
-                            ui.label(crate::i18n::tr_format!("Version {} — a clean-room, pure-Rust photo library and raw developer.", env!("CARGO_PKG_VERSION")));
-                            ui.label(crate::i18n::tr_format!("MIT OR Apache-2.0. Fonts: {} (OFL). Icons: original.", crate::theme::font_credits()));
-                            ui.add_space(10.0);
-                            let discord = egui::Button::new(egui::RichText::new(crate::i18n::tr("Join the ArtCraft Discord")).font(t.semibold(15.0)).color(egui::Color32::WHITE))
-                                .fill(t.accent)
-                                .min_size(egui::vec2(260.0, 34.0));
-                            let r = ui.add(discord).on_hover_text(crate::links::DISCORD);
-                            crate::widgets::register(ui.ctx(), "button:aboutDiscord", r.rect);
-                            if r.clicked() {
-                                let _ = crate::links::open(app, crate::links::DISCORD);
-                            }
-                            ui.add_space(6.0);
-                            for (label, url) in [
-                                ("LightCraft website", crate::links::APP_PAGE),
-                                ("Source code on GitHub", crate::links::GITHUB),
-                                ("ArtCraft — more creative apps", crate::links::WEBSITE),
-                            ] {
-                                let r = ui.link(crate::i18n::tr(label)).on_hover_text(url);
-                                if r.clicked() {
-                                    let _ = crate::links::open(app, url);
-                                }
-                            }
-                        }
-                    }
+                    // LightKub's About shows the app, its fonts and the "based on LightCraft" credit; the
+                    // Contributors and Models credits (crate::credits) stay for upstream merges.
+                    ui.set_min_width(480.0);
+                    ui.label(egui::RichText::new("LightKub").font(t.semibold(20.0)).color(t.text));
+                    ui.label(crate::i18n::tr_format!("Version {}", env!("CARGO_PKG_VERSION")));
+                    ui.add_space(6.0);
+                    ui.label(egui::RichText::new(format!("UI: egui · Fonts: {} (OFL) · Icons: original", crate::theme::font_credits())).color(t.text_dim).small());
+                    ui.add_space(12.0);
+                    ui.label(egui::RichText::new(crate::i18n::tr("Based on LightCraft by the ArtCraft team.")).color(t.text_dim));
                 }
                 Dialog::Shortcuts => crate::panels::keymap::body(app, ui, &t),
             }
             ui.add_space(4.0);
             ui.horizontal(|ui| {
-                // a model file LightCraft cannot use has nothing to confirm
+                // a model file LightKub cannot use has nothing to confirm
                 let unusable_model = matches!(&dlg, Dialog::DenoiseModel { info, .. } | Dialog::FaceModel { info, .. } if info["kind"] == "unsupported");
                 let informational = unusable_model || matches!(dlg, Dialog::About | Dialog::Shortcuts | Dialog::Settings { .. });
                 let sam = &app.session.segmenter;
@@ -911,7 +875,7 @@ pub fn fmt_gap(v: f64) -> String {
 
 /// Whether a dialog stays open after its action succeeded (the SAM 3 dialog while the model
 /// downloads).
-pub fn keeps_open(app: &LightcraftApp, dlg: &Dialog) -> bool {
+pub fn keeps_open(app: &LightkubApp, dlg: &Dialog) -> bool {
     matches!(dlg, Dialog::SamModel { .. }) && !app.session.segmenter.installed()
 }
 
@@ -925,14 +889,14 @@ fn sam_by_hand(sam: &lightcraft_engine::segment::Segmenter) -> bool {
 const SAM_HELP: &str = "https://github.com/storytold/lightcraft/blob/main/docs/ai-masks.md#getting-the-model";
 
 /// Show the SAM 3 model folder in the file manager (created first, so there is something to show).
-fn show_model_folder(app: &mut LightcraftApp, dir: &std::path::Path) -> Result<(), String> {
+fn show_model_folder(app: &mut LightkubApp, dir: &std::path::Path) -> Result<(), String> {
     std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
     let reveal = app.services.reveal.as_mut().ok_or("not available here")?;
     reveal(&dir.to_string_lossy())
 }
 
 /// The SAM 3 dialog: what the model is, its size and licence, and the download's progress.
-fn sam_model_body(app: &mut LightcraftApp, ui: &mut egui::Ui, error: Option<&str>) {
+fn sam_model_body(app: &mut LightkubApp, ui: &mut egui::Ui, error: Option<&str>) {
     use lightcraft_engine::segment::{LICENSE_NAME, LICENSE_URL, MODEL_BYTES};
     let t = Tokens::get(ui.ctx());
     let seg = &app.session.segmenter;
@@ -943,7 +907,7 @@ fn sam_model_body(app: &mut LightcraftApp, ui: &mut egui::Ui, error: Option<&str
     }
     let gb = |b: u64| b as f64 / 1e9;
     ui.label(crate::i18n::tr(
-        "Object and Describe masks use SAM 3, Meta's segmentation model. It isn't part of LightCraft, and everything else works without it.",
+        "Object and Describe masks use SAM 3, Meta's segmentation model. It isn't part of LightKub, and everything else works without it.",
     ));
     let dir = seg.dir.as_ref().map(|d| d.display().to_string()).unwrap_or_default();
     ui.label(format!("{} {:.1} GB, {} {dir}", crate::i18n::tr("A one-time download of about"), gb(MODEL_BYTES), crate::i18n::tr("saved in")));
@@ -951,7 +915,7 @@ fn sam_model_body(app: &mut LightcraftApp, ui: &mut egui::Ui, error: Option<&str
         egui::RichText::new(format!(
             "{} {LICENSE_NAME} — {}",
             crate::i18n::tr("Licence:"),
-            crate::i18n::tr("Meta's terms, not LightCraft's. Downloading it means accepting them.")
+            crate::i18n::tr("Meta's terms, not LightKub's. Downloading it means accepting them.")
         ))
         .color(t.text_label),
     );
@@ -1010,13 +974,13 @@ fn sam_model_body(app: &mut LightcraftApp, ui: &mut egui::Ui, error: Option<&str
 }
 
 /// Runs a command that creates an album and asks the Albums tree to open the folders down to it.
-fn created_in(app: &mut LightcraftApp, command: &str, params: serde_json::Value) -> Result<serde_json::Value, String> {
+fn created_in(app: &mut LightkubApp, command: &str, params: serde_json::Value) -> Result<serde_json::Value, String> {
     let r = app.run(command, params)?;
     app.ui.reveal_album = r.get("id").and_then(serde_json::Value::as_u64);
     Ok(r)
 }
 
-pub fn confirm_dialog(app: &mut LightcraftApp, dlg: &Dialog) -> Result<serde_json::Value, String> {
+pub fn confirm_dialog(app: &mut LightkubApp, dlg: &Dialog) -> Result<serde_json::Value, String> {
     match dlg {
         Dialog::SamModel { then, .. } => {
             if app.session.segmenter.installed() {
@@ -1114,7 +1078,7 @@ pub fn confirm_dialog(app: &mut LightcraftApp, dlg: &Dialog) -> Result<serde_jso
 }
 
 /// Open a one-field dialog that runs `command` with `params` + `{key: typed value}`.
-pub fn prompt(app: &mut LightcraftApp, title: &str, hint: &str, value: &str, command: &str, params: serde_json::Value, key: &str) {
+pub fn prompt(app: &mut LightkubApp, title: &str, hint: &str, value: &str, command: &str, params: serde_json::Value, key: &str) {
     app.ui.dialog =
         Some(Dialog::TextPrompt { title: title.into(), hint: hint.into(), value: value.into(), command: command.into(), params, key: key.into() });
 }

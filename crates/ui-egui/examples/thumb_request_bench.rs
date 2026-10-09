@@ -3,7 +3,7 @@ use lightcraft_develop::{BrushStroke, DevelopSettings, Mask, MaskComponent, Mask
 use lightcraft_engine::Session;
 use lightcraft_engine::media::{RenderJob, RenderResult};
 use lightcraft_ui_egui::{
-    LightcraftApp, Services,
+    LightkubApp, Services,
     headless::Headless,
     panels::grid::request_thumb,
     render::{RenderOffload, Slot, Tex},
@@ -103,7 +103,7 @@ fn micro(points: usize, pending: bool) {
         p.content_hash = Some(format!("{i:032x}"));
         session.catalog.apply(Op::AddPhoto { photo: Box::new(p) }).unwrap();
     }
-    let mut app = LightcraftApp::new(session, Services::default());
+    let mut app = LightkubApp::new(session, Services::default());
     app.renderer.set_offload(Box::new(Blocked));
     let ctx = egui::Context::default();
     let texture = ctx.load_texture("audit", egui::ColorImage::new([1, 1], vec![egui::Color32::GRAY]), Default::default());
@@ -201,7 +201,7 @@ fn real() {
         lightcraft_engine::import::apply_import_defaults(&session, &mut p);
         session.catalog.apply(Op::AddPhoto { photo: Box::new(p) }).unwrap();
     }
-    let mut h = Headless::new(LightcraftApp::new(session, Services { png: None, ..Default::default() }), [1400.0, 900.0], 1.0);
+    let mut h = Headless::new(LightkubApp::new(session, Services { png: None, ..Default::default() }), [1400.0, 900.0], 1.0);
     h.app.renderer = lightcraft_ui_egui::render::Renderer::with_worker_threads(1);
     h.app.renderer.keep_pixels = true;
     h.app.ui.view = lightcraft_ui_egui::state::ViewMode::PhotoGrid;
