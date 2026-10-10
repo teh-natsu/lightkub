@@ -23,7 +23,7 @@ jobs:
     env:
       ACTIONLINT_VERSION: 1.7.12
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install tools
         run: |
           sudo apt-get update
@@ -51,6 +51,11 @@ jobs:
           if grep -oE '<Icon Id="[^"]*"' packaging/windows/lightkub.wxs | grep -vE '\.(ico|exe)"$'; then
             echo "::error::Icon Id must end in .ico or .exe"; exit 1
           fi
+          # The interactive installer asks where to install and ends on a completion page (issues #18, #399).
+          for want in '<UIRef Id="LightkubUI" />' 'Value="InstallDirDlg"' '<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />' \
+              'Key="Software\LightKub" Name="InstallFolder"' 'Value="LaunchLightkub"'; do
+            grep -qF "$want" packaging/windows/lightkub.wxs || { echo "::error::lightkub.wxs lost: $want"; exit 1; }
+          done
           desktop-file-validate packaging/linux/io.github.teh_natsu.lightkub.desktop
           sed -e 's/@VERSION@/0.0.0/' -e 's/@DATE@/2026-01-01/' packaging/linux/io.github.teh_natsu.lightkub.metainfo.xml.in >"$RUNNER_TEMP/io.github.teh_natsu.lightkub.metainfo.xml"
           appstreamcli validate --no-net --explain "$RUNNER_TEMP/io.github.teh_natsu.lightkub.metainfo.xml"

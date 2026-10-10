@@ -19,6 +19,13 @@ Anuphan (assets/fonts/Anuphan-*.ttf), Copyright 2019 The Anuphan Project Authors
 the variable font — SIL Open Font License 1.1. See assets/fonts/OFL-Anuphan.txt.
 Showcase photographs by Ansel Adams, Dorothea Lange and NASA (docs/images/) — public domain. See assets/ATTRIBUTION.md.
 
+crates/raw/src/spectral_table.rs (lightcraft-raw) holds camera colour matrices derived from the
+camera spectral sensitivities, training reflectances and model alias list of rawtoaces-data
+(https://github.com/AcademySoftwareFoundation/rawtoaces-data, v1.1.0), an Academy Software
+Foundation project licensed under the Apache License 2.0, and from the CIE 1931 colour-matching
+functions it ships (CIE, CC-BY-4.0). The matrices were fitted by the LightCraft contributors
+(2026) with tools/spectral_camera_table.py. See assets/ATTRIBUTION.md.
+
 crates/segment (lightcraft-segment) ports the SAM 3 model code of Hugging Face Transformers
 (https://github.com/huggingface/transformers, src/transformers/models/sam3 and sam3_tracker),
 Copyright The HuggingFace Team and Meta Platforms, Inc., licensed under the Apache License 2.0.

@@ -75,6 +75,12 @@ let
     "lightkub"
     "lightkub-cli"
   ];
+
+  # HEIC/HEIF decoding (opt-in upstream: HEVC patents are the distributor's call), as the release builds.
+  buildFeatures = [
+    "lightkub/heif"
+    "lightkub-cli/heif"
+  ];
 in
 rustPlatform.buildRustPackage {
   pname = "lightkub";

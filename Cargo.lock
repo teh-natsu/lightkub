@@ -2980,6 +2980,7 @@ version = "0.5.0"
 dependencies = [
  "crc32fast",
  "lightcraft-develop",
+ "lightcraft-geom",
  "lightcraft-meta",
  "log",
  "proptest",
@@ -2993,6 +2994,7 @@ dependencies = [
 name = "lightcraft-codecs"
 version = "0.5.0"
 dependencies = [
+ "avif-serialize",
  "bytemuck",
  "image",
  "image-webp",
@@ -3006,6 +3008,7 @@ dependencies = [
  "moxcms 0.9.1",
  "png",
  "proptest",
+ "rav1e",
  "ravif",
  "rayon",
  "serde",
@@ -3085,6 +3088,7 @@ dependencies = [
  "lightcraft-fetch",
  "lightcraft-geom",
  "lightcraft-gpu",
+ "lightcraft-heif",
  "lightcraft-merge",
  "lightcraft-meta",
  "lightcraft-pipeline",
@@ -3148,6 +3152,7 @@ dependencies = [
  "lightcraft-geom",
  "lightcraft-pipeline",
  "lightcraft-raster",
+ "lightcraft-raw",
  "lightcraft-scenes",
  "log",
  "pollster 1.0.1",
@@ -3159,6 +3164,7 @@ name = "lightcraft-heif"
 version = "0.5.0"
 dependencies = [
  "heic-rs",
+ "rayon",
 ]
 
 [[package]]
@@ -3313,6 +3319,7 @@ dependencies = [
  "lightcraft-engine",
  "lightcraft-faces",
  "lightcraft-geom",
+ "lightcraft-merge",
  "lightcraft-meta",
  "lightcraft-pipeline",
  "lightcraft-preview",

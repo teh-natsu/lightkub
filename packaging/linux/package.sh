@@ -42,7 +42,7 @@ BASENAME="lightkub-$VERSION-linux-$ARCH"
 echo "==> LightKub $VERSION for Linux $ARCH ($FORMATS)"
 
 if [ "$SKIP_BUILD" = 0 ]; then
-  (cd "$ROOT" && cargo build --release --locked -p lightkub -p lightkub-cli)
+  (cd "$ROOT" && cargo build --release --locked -p lightkub -p lightkub-cli --features lightkub/heif,lightkub-cli/heif)
 fi
 BIN="$CARGO_TARGET_DIR/release"
 WORK="$CARGO_TARGET_DIR/linux-package"

@@ -48,7 +48,8 @@
 | รวมภาพ | HDR, Panorama, HDR Panorama → DNG |
 | คลังรูป | อัลบั้ม โฟลเดอร์ smart album, stack, virtual copy, ดาว, ธง, ป้ายสี, ค้นหาตามฟิลด์ (`rating:>3 iso:>800 keyword:ภูเขา`) |
 | นำเข้า | เพิ่มแบบอยู่ที่เดิม/คัดลอก/ย้าย, ตั้งชื่อและโฟลเดอร์ตามแม่แบบ, ตรวจรูปซ้ำ, โฟลเดอร์ที่เฝ้าดู |
-| ส่งออก | JPEG / PNG / TIFF / WebP / AVIF / DNG, ปรับขนาด, จำกัดขนาดไฟล์, ลายน้ำ, ส่งออกหลายรูป |
+| ส่งออก | JPEG / PNG / TIFF / WebP / AVIF / DNG, ปรับขนาด, จำกัดขนาดไฟล์, ลายน้ำ, ส่งออกหลายรูป, Contact Sheet เป็น PDF |
+| HDR | แต่งภาพ HDR พร้อมดูพื้นที่ HDR (Visualize HDR) และส่งออกเป็น gain map JPEG, PQ AVIF หรือ TIFF 32 บิต |
 | ไฟล์ RAW | DNG, Canon CR2/CR3, Sony ARW, Nikon NEF, Fujifilm RAF (รวม X-Trans), Panasonic RW2, Pentax PEF, Olympus ORF, Samsung SRW, Hasselblad 3FR (ตัวถอดรหัสเขียนเองทั้งหมด) |
 | XMP | อ่าน/เขียน sidecar, อ่านค่า `crs:` และไฟล์ preset |
 
