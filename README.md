@@ -108,7 +108,7 @@ cargo xtask ci                      # ตรวจทุกอย่างแบ
 
 ยังเป็นรุ่นทดลอง ใช้กับ JPEG/DNG และไฟล์ RAW ส่วนใหญ่ของ Nikon / Sony / Canon รุ่นเก่าได้ดีแล้ว
 ส่วนที่ยังขาดคือการปรับเทียบสีกล้องแบบวัดจริง ไฟล์ RAW บางแบบ (Olympus แบบบีบอัด, CR3 บางรุ่น)
-มาสก์และลด noise ด้วย AI และโหมด HDR / วิดีโอ รายละเอียดอยู่ใน [ROADMAP.md](ROADMAP.md) และ [docs/parity.md](docs/parity.md)
+มาสก์และลด noise ด้วย AI และโหมด HDR / วิดีโอ รายละเอียดอยู่ใน [ROADMAP.md](ROADMAP.md) และ [docs/parity-checklist.md](docs/parity-checklist.md)
 
 ## สัญญาอนุญาตและเครดิต
 

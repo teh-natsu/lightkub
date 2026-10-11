@@ -1866,5 +1866,12 @@
   "Finding faces": "Recherche des visages",
   "Synchronizing folder": "Synchronisation du dossier",
   "Looking for changes": "Recherche des modifications",
-  "Based on LightCraft by the ArtCraft team.": "Basé sur LightCraft de l’équipe ArtCraft."
+  "Arrange Panel": "Arrange Panel",
+  "Close panel": "Close panel",
+  "Float panel": "Float panel",
+  "Move to group": "Move to group",
+  "Panels": "Panels",
+  "Reset Panel Layout": "Reset Panel Layout",
+  "Resize panel window": "Resize panel window",
+  "Resize panels": "Resize panels"
 }
