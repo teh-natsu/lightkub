@@ -29,7 +29,10 @@ for pair in "$SVG:$MAC" "$SMALL:$MAC_SMALL"; do
   grep -q 'viewBox="-62 -62 636 636"' "${pair#*:}" || { echo "error: unexpected viewBox in ${pair%%:*}" >&2; exit 1; }
 done
 
-render() { resvg -w "$2" -h "$2" "$1" "$3" </dev/null; }
+render() {
+  local src="$1" size="$2" out="$3"
+  resvg -w "$size" -h "$size" "$src" "$out" </dev/null
+}
 # The fine detail is lost at 24 px and below: use the small variant there.
 pick() { if [ "$1" -le 24 ]; then echo "$SMALL"; else echo "$SVG"; fi; }
 pick_mac() { if [ "$1" -le 32 ]; then echo "$MAC_SMALL"; else echo "$MAC"; fi; }

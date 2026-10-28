@@ -29,31 +29,20 @@ fn curve_luts(c: &ToneCurve) -> Option<[Lut1; 3]> {
         return None;
     }
     const N: usize = 1024;
-    let (s1, s2, s3) = ((c.split_shadows / 100.0) as f32, (c.split_mid / 100.0) as f32, (c.split_highlights / 100.0) as f32);
-    let regions = [(0.0, s1, c.shadows), (s1, s2, c.darks), (s2, s3, c.lights), (s3, 1.0, c.highlights)];
-    let mut base = Lut1::from_fn(N, |x| {
-        let mut d = 0.0;
-        for (a, b, amt) in regions {
-            if amt == 0.0 {
-                continue;
-            }
-            let (ctr, half) = ((a + b) / 2.0, (b - a) * 0.75 + 0.05);
-            let t = ((x - ctr) / half).clamp(-1.0, 1.0);
-            let win = 0.5 + 0.5 * (t * std::f32::consts::PI).cos();
-            d += (amt / 100.0) as f32 * 0.22 * win;
-        }
-        (x + d * 4.0 * x * (1.0 - x)).clamp(0.0, 1.0)
-    });
-    // keep monotone
-    for i in 1..N {
-        base.v[i] = base.v[i].max(base.v[i - 1]);
-    }
+    let mut base = crate::curve::ParametricCurve::new(c).to_lut();
     let to_pts = |p: &[Point]| p.iter().map(|q| (q.x, q.y)).collect::<Vec<_>>();
     if master {
         base = MonotoneCurve::new(&to_pts(&c.master)).to_lut(N).compose(&base);
     }
     let per = [&c.red, &c.green, &c.blue];
-    Some(std::array::from_fn(|i| if chans[i] { MonotoneCurve::new(&to_pts(per[i])).to_lut(N).compose(&base) } else { base.clone() }))
+    Some(std::array::from_fn(|i| {
+        if chans.get(i).copied().unwrap_or(false) {
+            let pts = per.get(i).map(|&p| to_pts(p)).unwrap_or_default();
+            MonotoneCurve::new(&pts).to_lut(N).compose(&base)
+        } else {
+            base.clone()
+        }
+    }))
 }
 
 /// Vignette (post-crop) parameters.
@@ -275,12 +264,14 @@ impl FinishParams {
 /// #146) is a new [`Process`] with its own arm here, and V1's arm stays as it is, so photos edited
 /// under V1 keep their look (`docs/process-versions.md`). CPU and GPU both take it from here.
 /// `peak` is the HDR render's peak relative to SDR white ([`lightcraft_develop::Hdr::peak`]); at 1.0 (SDR)
-/// every arm is the SDR tone map. The camera's look is bounded at white, so HDR renders use the HDR tone map.
+/// every arm is the SDR tone map. An HDR render keeps the camera's look through the midtones and
+/// lifts its highlights past white ([`ToneMap::camera_hdr`]), so it matches the SDR render below them.
 pub fn base_tone(s: &DevelopSettings, info: &SourceInfo, peak: f32) -> ToneMap {
     let l = &s.light;
     match s.process.process() {
-        Process::V1 => match info.camera_tone.as_ref().filter(|_| info.raw && peak <= 1.0) {
-            Some(curve) => ToneMap::camera(curve, l.contrast, l.whites, l.blacks),
+        // V2 changes the Highlights/Shadows base (`local::tone_base`), not the tone map
+        Process::V1 | Process::V2 => match info.camera_tone.as_ref().filter(|_| info.raw) {
+            Some(curve) => ToneMap::camera_hdr(curve, l.contrast, l.whites, l.blacks, peak),
             None if info.raw => ToneMap::hdr(l.contrast, l.whites, l.blacks, peak),
             None => ToneMap::display_hdr(l.contrast, l.whites, l.blacks, peak),
         },
@@ -448,7 +439,12 @@ pub(crate) fn finish_with<T: Copy + Default + Send>(
             if dz != 0.0
                 && let Some(dark) = &p.dark
             {
-                let d = (dark.data[i] / air_pre).clamp(0.0, 1.0);
+                // The dark channel is a blur, not a patch minimum: near bright neighbours it credits
+                // dark pixels with veil they don't hold (and a windowed render borrows the whole
+                // frame's airlight), so the subtraction went past zero and crushed them to black
+                // (#2504). Never attribute more veil than the pixel's own minimum channel.
+                let c_min = c[0].min(c[1]).min(c[2]);
+                let d = (if air_pre > 0.0 { dark.data[i] / air_pre } else { 0.0 }).min(if air > 0.0 { c_min / air } else { 0.0 }).clamp(0.0, 1.0);
                 if dz > 0.0 {
                     let t = (1.0 - 0.95 * dz.min(1.0) * d).max(0.12);
                     c = c.map(|v| ((v - air * (1.0 - t)) / t).max(0.0));
@@ -583,6 +579,13 @@ pub(crate) fn finish_with<T: Copy + Default + Send>(
             // soft proofing maps into the proof space first and shows that in the output space
             let mut warn = None;
             let mut r = match &fp.proof {
+                Some(pp) if pp.table.is_some() => {
+                    let (q, dist) = pp.table.as_ref().map_or((d, 0.0), |t| t.sample(d));
+                    if pp.dest_warning && dist > crate::output::PROOF_GAMUT_TOLERANCE {
+                        warn = Some(crate::output::PROOF_DEST_WARNING);
+                    }
+                    mul3(to_out, q)
+                }
                 Some(pp) => {
                     let q0 = mul3(&pp.to_proof, d);
                     let (q, t) = gamut_map_to(q0, pp.luma, peak);
@@ -594,7 +597,7 @@ pub(crate) fn finish_with<T: Copy + Default + Send>(
                 None => mul3(to_out, d),
             };
             let (mapped, t) = gamut_map_to(r, *out_luma, peak);
-            if fp.proof.is_some_and(|pp| pp.display_warning) && warn.is_none() && out_of_gamut(r, t) {
+            if fp.proof.as_ref().is_some_and(|pp| pp.display_warning) && warn.is_none() && out_of_gamut(r, t) {
                 warn = Some(crate::output::PROOF_DISPLAY_WARNING);
             }
             r = mapped;

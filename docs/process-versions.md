@@ -5,7 +5,10 @@ Every photo's develop settings record the **rendering process** they are interpr
 this the process version. It lets the look of LightKub improve (a new default tone curve, issue #146;
 stronger Light sliders, issue #196) without changing a single photo someone has already edited.
 
-Today there is one process, **V1**: LightKub's rendering from before process versions existed.
+| Process | What it changes |
+|---|---|
+| **V1** | LightKub's rendering from before process versions existed. Frozen. |
+| **V2** (the latest) | Highlights and Shadows keep fine detail (issue #632): their base layer (`local::tone_base`) is the edge-aware filter of a separable median of log luminance (radius 0.15 % of the long edge, at most 24 px, `local::BASE_DETAIL`) instead of log luminance itself, so twigs, lines and texture take their surroundings' shift and keep their contrast; region edges stay sharp. CPU (`local::prepare`) and GPU prepare branch on `local::tone_base_detail` (0 = no median under V1); the base plane is cached per process (`local::BaseKey`). Renders without Highlights or Shadows (global or local) are the same as V1's. Tone map unchanged. |
 
 ## The rule
 
@@ -18,6 +21,11 @@ Today there is one process, **V1**: LightKub's rendering from before process ver
   error, CPU and GPU disagreeing) are not looks and can land in place, as before.
 - Changes to how a file is decoded or which camera colour it gets change the source, not how settings
   are interpreted; the process doesn't reach that stage today.
+
+**Neutral display tone map** (JPEG, PNG and other display-referred sources with Contrast, Whites and
+Blacks at 0) is the identity up to white: the SDR shoulder no longer pulls 1.0 down to 0.9875 (8-bit
+255 to 254, issue #1945). It landed in place as a bug fix, since the tone map promised identity at
+neutral settings; edited curves keep the shoulder and their V1 look.
 
 ## Adding a process
 

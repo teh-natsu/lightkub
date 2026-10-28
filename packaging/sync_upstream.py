@@ -45,6 +45,7 @@ PROTECTED = [
     # File formats shared with LightCraft: its XMP namespace and preset files stay readable both ways.
     "ns.lightcraft.app",
     '"lightcraft.preset"',
+    '`lightcraft.preset`',
     '"lightcraft.curvePresets"',
     "lightcraft*",
     'starts_with("lightcraft")',
@@ -63,6 +64,8 @@ REPLACEMENTS = [
 
 BRANDING = re.compile(r"discord\.gg|getartcraft|artcraft[-_](mark|logo)|docs/brand|Learning Machines|storyteller\.ai|ai\.storyteller", re.I)
 BRANDING_ALLOWED_FILES = {"NOTICE", "README.md", "ROADMAP.md", "LICENSE-MIT", "packaging/sync_upstream.py"}
+# Another app's id, which LightKub uses to find an installed PhotoCraft (Edit in PhotoCraft).
+BRANDING_ALLOWED_LINES = {'const PHOTOCRAFT_ID: &str = "ai.storyteller.photocraft";'}
 
 
 def rename_text(text, protect=True):
@@ -143,7 +146,7 @@ def branding_left():
         except (UnicodeDecodeError, OSError):
             continue
         for n, line in enumerate(text.splitlines(), 1):
-            if BRANDING.search(line):
+            if BRANDING.search(line) and line.strip() not in BRANDING_ALLOWED_LINES:
                 found.append(f"{rel}:{n}: {line.strip()[:140]}")
     return found
 

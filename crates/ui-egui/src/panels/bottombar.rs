@@ -6,9 +6,9 @@ use serde_json::json;
 
 use crate::LightkubApp;
 use crate::icons::{Icon, paint};
-use crate::state::{BeforeAfter, ViewMode, Zoom};
+use crate::state::{ViewMode, Zoom};
 use crate::theme::Tokens;
-use crate::widgets::{icon_button, register, stars};
+use crate::widgets::{icon_button, register};
 
 const VIEW_MODES: &[(&str, Icon, ViewMode, &str)] = &[
     ("photoGrid", Icon::GridPhoto, ViewMode::PhotoGrid, "Photo Grid (G)"),
@@ -62,9 +62,11 @@ pub fn show(app: &mut LightkubApp, ui: &mut egui::Ui) {
                                 }
                             }
                             ui.separator();
-                            ui.menu_button(crate::i18n::tr("Sort"), |ui| sort_menu(app, ui));
+                            crate::widgets::menu_button(ui, crate::i18n::tr("Sort"), |ui| sort_menu(app, ui));
                             if compact_zoom && matches!(app.ui.view, ViewMode::Detail | ViewMode::Compare) {
-                                ui.menu_button(crate::i18n::tr_format!("Click {}:1", app.ui.click_zoom / 100), |ui| click_zoom_menu(app, ui));
+                                crate::widgets::menu_button(ui, crate::i18n::tr_format!("Click {}:1", app.ui.click_zoom / 100), |ui| {
+                                    click_zoom_menu(app, ui)
+                                });
                             }
                         });
                     }
@@ -76,8 +78,9 @@ pub fn show(app: &mut LightkubApp, ui: &mut egui::Ui) {
         });
 }
 
-/// Width of the centre group: the rating/flag pill, then Copy/Paste Edit Settings and its gear.
-const PILL_W: f32 = 196.0;
+/// Five 19-point stars, three 22-point flags, seven 3-point gaps, a 6-point group gap
+/// and 10-point padding at both ends.
+const PILL_W: f32 = 208.0;
 
 /// The rating/flag pill and copy/paste settings, between `from` and `to` (the side groups): the
 /// copy buttons go first when there is no room (they are in the Edit menu too), then the pill.
@@ -102,7 +105,7 @@ fn centre(app: &mut LightkubApp, ui: &mut egui::Ui, full: Rect, from: f32, to: f
         ui.new_child(egui::UiBuilder::new().max_rect(pill.shrink2(vec2(10.0, 4.0))).layout(egui::Layout::left_to_right(egui::Align::Center)));
     pill_ui.spacing_mut().item_spacing.x = 3.0;
     let rating = active.as_ref().map(|p| p.rating).unwrap_or(0);
-    if let Some(r) = stars(&mut pill_ui, "bottom", rating, 19.0) {
+    if let Some(r) = crate::rating::Rating::new("bottom", rating).show(&mut pill_ui) {
         let mut params = json!({"rating": r});
         crate::panels::compare::target_active(app, &mut params);
         let _ = app.run("photo.rate", params);
@@ -111,7 +114,16 @@ fn centre(app: &mut LightkubApp, ui: &mut egui::Ui, full: Rect, from: f32, to: f
     let flag = active.as_ref().map(|p| p.flag).unwrap_or_default();
     for (id, icon, f) in [("unflag", Icon::Circle, Flag::None), ("pick", Icon::FlagPick, Flag::Pick), ("reject", Icon::FlagReject, Flag::Reject)] {
         let (r, resp) = pill_ui.allocate_exact_size(vec2(22.0, 22.0), Sense::click());
-        register(pill_ui.ctx(), format!("flag:{id}"), r);
+        crate::widgets::announce_selected(
+            &resp,
+            crate::i18n::tr(match f {
+                Flag::None => "Unflagged",
+                Flag::Pick => "Pick",
+                Flag::Reject => "Reject",
+            }),
+            flag == f,
+        );
+        register(&pill_ui, format!("flag:{id}"), r);
         let on = flag == f && f != Flag::None;
         let c = if on {
             if f == Flag::Reject { t.reject } else { t.pick }
@@ -120,6 +132,8 @@ fn centre(app: &mut LightkubApp, ui: &mut egui::Ui, full: Rect, from: f32, to: f
         } else {
             t.icon
         };
+        // the Pick button shows the flag the photo carries: filled while it is a pick
+        let icon = if on && f == Flag::Pick { Icon::FlagPickFilled } else { icon };
         paint(pill_ui.painter(), r.shrink(3.0), icon, c);
         if resp.clicked() {
             let mut params = json!({"flag": match f { Flag::Pick => "pick", Flag::Reject => "reject", Flag::None => "none" }});
@@ -132,8 +146,9 @@ fn centre(app: &mut LightkubApp, ui: &mut egui::Ui, full: Rect, from: f32, to: f
         return;
     }
     let copy_r = Rect::from_min_size(pos2(pill.right() + 10.0, pill.top()), vec2(copy_width, 30.0));
-    let cresp = ui.interact(copy_r, egui::Id::new("copy-settings"), Sense::click());
-    register(ui.ctx(), "button:copySettings", copy_r);
+    let cresp = ui.interact(copy_r, egui::Id::unique("copy-settings"), Sense::click());
+    crate::widgets::announce(&cresp, label.to_string());
+    register(ui, "button:copySettings", copy_r);
     ui.painter().rect_filled(copy_r, 15.0, if cresp.hovered() { t.hover } else { t.canvas });
     ui.painter().text(copy_r.center(), Align2::CENTER_CENTER, label, t.font(13.0), if active.is_some() { t.text_label } else { t.text_disabled });
     if cresp.clicked() && active.is_some() {
@@ -142,8 +157,9 @@ fn centre(app: &mut LightkubApp, ui: &mut egui::Ui, full: Rect, from: f32, to: f
         app.toast(ui.ctx(), crate::i18n::tr(msg));
     }
     let gear_r = Rect::from_min_size(pos2(copy_r.right() + 4.0, pill.top()), vec2(30.0, 30.0));
-    let gresp = ui.interact(gear_r, egui::Id::new("copy-gear"), Sense::click());
-    register(ui.ctx(), "icon:copyGear", gear_r);
+    let gresp = ui.interact(gear_r, egui::Id::unique("copy-gear"), Sense::click());
+    crate::widgets::announce(&gresp, crate::i18n::tr("Copy Settings…"));
+    register(ui, "icon:copyGear", gear_r);
     ui.painter().rect_filled(gear_r, 15.0, if gresp.hovered() { t.hover } else { t.canvas });
     paint(ui.painter(), gear_r.shrink(7.0), Icon::Gear, t.icon);
     if gresp.clicked() {
@@ -177,16 +193,8 @@ fn right_side(app: &mut LightkubApp, ui: &mut egui::Ui, full: Rect, compact_zoom
     if app.ui.view == ViewMode::Survey {
         // no zoom or thumbnail size in Survey
     } else if matches!(app.ui.view, ViewMode::Detail | ViewMode::Compare) {
-        if icon_button(
-            &mut child,
-            "beforeAfter",
-            Icon::BeforeAfter,
-            vec2(30.0, 30.0),
-            app.ui.before_after != BeforeAfter::Off,
-            true,
-            "Before/After (Y)",
-        )
-        .clicked()
+        if icon_button(&mut child, "beforeAfter", Icon::BeforeAfter, vec2(30.0, 30.0), app.ui.before_after.is_layout(), true, "Before/After (Y)")
+            .clicked()
         {
             let _ = app.run("view.beforeAfter", json!({}));
         }
@@ -214,7 +222,7 @@ fn right_side(app: &mut LightkubApp, ui: &mut egui::Ui, full: Rect, compact_zoom
                 ("200%", Zoom::Percent(200.0)),
                 ("400%", Zoom::Percent(400.0)),
             ] {
-                if ui.selectable_label(app.ui.zoom == z, label).clicked() {
+                if ui.selectable_label(app.ui.zoom == z, crate::i18n::tr(label)).clicked() {
                     app.ui.zoom = z;
                     app.ui.pan = (0.5, 0.5);
                 }
@@ -234,17 +242,19 @@ fn right_side(app: &mut LightkubApp, ui: &mut egui::Ui, full: Rect, compact_zoom
     } else {
         // thumbnail size slider
         let (r, resp) = child.allocate_exact_size(vec2(110.0, 20.0), Sense::click_and_drag());
-        register(child.ctx(), "slider:thumbSize", r);
+        crate::widgets::announce(&resp, crate::i18n::tr("Thumbnail size"));
+        register(&child, "slider:thumbSize", r);
         let p = child.painter();
         let y = r.center().y;
         p.line_segment([pos2(r.left(), y), pos2(r.right(), y)], egui::Stroke::new(2.0, t.track));
-        let f = (app.ui.thumb_size - 90.0) / (480.0 - 90.0);
+        let (min, max) = (crate::state::THUMB_SIZE_MIN, crate::state::THUMB_SIZE_MAX);
+        let f = (app.ui.thumb_size - min) / (max - min);
         let x = r.left() + f * r.width();
         p.rect_filled(Rect::from_center_size(pos2(x, y), vec2(3.0, 14.0)), 1.0, t.thumb_hover);
         if let Some(pp) = resp.interact_pointer_pos()
             && (resp.dragged() || resp.clicked())
         {
-            app.ui.thumb_size = 90.0 + ((pp.x - r.left()) / r.width()).clamp(0.0, 1.0) * (480.0 - 90.0);
+            app.ui.thumb_size = min + ((pp.x - r.left()) / r.width()).clamp(0.0, 1.0) * (max - min);
         }
     }
     if child.min_rect().width() > 0.0 { child.min_rect().left() } else { full.right() }
@@ -278,6 +288,14 @@ fn sort_menu(app: &mut LightkubApp, ui: &mut egui::Ui) {
     }
     if cur.key == Random && ui.button(crate::i18n::tr("Reshuffle")).clicked() {
         let _ = app.run("library.shuffle", json!({}));
+    }
+    // a view that holds its photos shows what matches now when asked to
+    if app.session.hold_view {
+        let r = ui.button(crate::i18n::tr("Refresh View"));
+        crate::widgets::register(ui, "button:refreshView", r.rect);
+        if r.clicked() {
+            let _ = app.run("library.refresh", json!({}));
+        }
     }
     ui.separator();
     // a shuffle has no direction worth choosing
@@ -350,7 +368,8 @@ mod visual_regressions {
                     harness.run_steps(4);
                     let stem = format!("lightkub-bottom-{view:?}-{width}-{scale}x");
                     harness.render().unwrap().save(directory.join(format!("{stem}.png"))).unwrap();
-                    let panel = egui::containers::panel::PanelState::load(&harness.ctx, egui::Id::new("bottom_bar")).unwrap().outer_rect;
+                    let panel_id = harness.ctx.viewport_id().root_ui_id().with("bottom_bar");
+                    let panel = egui::containers::panel::PanelState::load(&harness.ctx, panel_id).unwrap().outer_rect;
                     let controls: serde_json::Map<String, serde_json::Value> = crate::widgets::take_registry(&harness.ctx)
                         .into_iter()
                         .map(|(id, r)| (id, json!([r.left(), r.top(), r.width(), r.height()])))
@@ -453,6 +472,50 @@ mod visual_regressions {
             harness.key_press(egui::Key::Space);
             harness.run_steps(3);
             assert_eq!(harness.state().ui.view, ViewMode::People, "keyboard activation dispatches the view command");
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Services;
+    use crate::headless::HeadlessView;
+
+    #[test]
+    fn rating_and_flag_buttons_keep_padding_inside_the_pill() {
+        for scale in [1.0, 2.0] {
+            for room in [240.0, 500.0] {
+                let mut app = LightkubApp::new(lightcraft_engine::Session::new(), Services::default());
+                let mut view = HeadlessView::new();
+                for frame in 0..3 {
+                    let raw = HeadlessView::raw_input(vec2(700.0, 40.0), scale, frame as f64 / 60.0, vec![]);
+                    view.run(raw, |ui| {
+                        let full = ui.max_rect();
+                        centre(&mut app, ui, full, 20.0, 20.0 + room);
+                    });
+                    let widgets = crate::widgets::take_registry(&view.ctx);
+                    let star = widgets.iter().find(|(id, _)| id == "star:bottom:1").unwrap().1;
+                    let pill = view
+                        .shapes
+                        .iter()
+                        .find_map(|shape| match &shape.shape {
+                            egui::Shape::Rect(rect) if rect.rect.contains(star.center()) && rect.rect.height() == 30.0 => Some(rect.rect),
+                            _ => None,
+                        })
+                        .unwrap();
+                    let inner = pill.shrink2(vec2(10.0, 4.0));
+                    for (id, rect) in &widgets {
+                        if id.starts_with("star:bottom:") || id.starts_with("flag:") {
+                            assert!(inner.contains_rect(*rect), "{id} {rect:?} exceeds the pill's padded bounds {inner:?} at scale {scale}");
+                        }
+                    }
+                    assert!(pill.left() >= 20.0 && pill.right() <= 20.0 + room);
+                    if let Some((_, copy)) = widgets.iter().find(|(id, _)| id == "button:copySettings") {
+                        assert!(copy.left() >= pill.right() + 10.0);
+                    }
+                }
+            }
         }
     }
 }
