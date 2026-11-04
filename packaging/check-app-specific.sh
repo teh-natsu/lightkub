@@ -17,6 +17,8 @@ for name in ("io.github.teh_natsu.lightkub.yml", "io.github.teh_natsu.lightkub.b
     with open("packaging/linux/flatpak/" + name) as source:
         manifest = yaml.safe_load(source)
     assert manifest["id"] == "io.github.teh_natsu.lightkub" and manifest["command"] == "lightkub", name
+    # Without this talk-name the sandbox hides the accessibility bus and Orca cannot see the app.
+    assert "--talk-name=org.a11y.Bus" in manifest["finish-args"], f"{name} lost --talk-name=org.a11y.Bus"
     manifests.append(manifest)
 for key in ("runtime", "runtime-version", "sdk", "finish-args"):
     assert manifests[0][key] == manifests[1][key], f"Flatpak manifests disagree on {key}"

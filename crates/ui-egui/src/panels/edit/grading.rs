@@ -1,5 +1,7 @@
 use super::sliders::control;
-use super::*;
+use super::{
+    Align2, Color32, DevelopSettings, Icon, LightkubApp, Mesh, PhotoId, Pos2, Rect, Sense, Stroke, Tokens, Vertex, json, paint, pos2, register, vec2,
+};
 
 // ------------------------------------------------------------------------------ colour grading
 

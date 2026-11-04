@@ -14,7 +14,7 @@ pub fn show(app: &mut LightkubApp, ctx: &egui::Context) {
         return;
     }
     let vid = egui::ViewportId::from_hash_of("lightkub-second-window");
-    let builder = egui::ViewportBuilder::default().with_title("LightKub — Second Window").with_inner_size([960.0, 640.0]);
+    let builder = egui::ViewportBuilder::default().with_title(crate::i18n::tr("LightKub — Second Window")).with_inner_size([960.0, 640.0]);
     ctx.show_viewport_immediate(vid, builder, |ui, class| {
         // 0.37 passes the viewport's root `Ui` (not a `Context`). Do not enter `root_ui` from it.
         // (without native windows — web, headless — egui wraps this in a floating window)

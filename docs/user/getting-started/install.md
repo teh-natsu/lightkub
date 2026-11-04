@@ -11,12 +11,12 @@ Download the file for your system from the [latest release](https://github.com/t
 
 1. Open the [latest release](https://github.com/teh-natsu/lightkub/releases/latest).
 2. Download `lightkub-<version>-windows-x64.msi`. It fits most PCs (Intel and AMD, 64-bit).
-3. Run the file. The installer asks where to install. The default is `C:\Program Files\LightKub`, and upgrades stay in the folder you chose.
+3. Run the file. The first page asks who to install LightCraft for. **Only for me** is the default: it needs no administrator permission and installs to `%LOCALAPPDATA%\Programs\ArtCraft\LightCraft`. **Everyone on this computer** asks for an administrator and installs to `C:\Program Files\ArtCraft\LightCraft` (`Program Files (x86)` for the 32-bit build). Upgrades stay in the folder you chose.
 4. At the end, choose the option to start LightKub.
 
 For a Snapdragon or other Arm PC, download `lightkub-<version>-windows-arm64.msi` instead. For a 32-bit Windows, download `lightkub-<version>-windows-x86.msi`.
 
-Upgrading from an installer older than 0.6.0 also keeps LightKub in the folder it was installed in. If that folder was deleted, the upgrade installs to `C:\Program Files\LightKub`.
+Upgrading from an installer older than 0.6.0 also keeps LightKub in the folder it was installed in. An upgrade uses the folder that the earlier install recorded and does not check that it still exists, so if you deleted that folder, the upgrade creates it again.
 
 To run it without installing, download `lightkub-<version>-windows-x64-portable.zip`. Portable builds for `arm64` and `x86` are on the release page too.
 
